@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 1",
+  titulo: "Como chegamos aqui e o ecossistema",
+  questoes: [
+    {
+      pergunta: "Um cliente diz que 'só vai mexer com IA quando entender melhor esse tal de ChatGPT'. Qual afirmação está correta?",
+      alternativas: [
+        "IA e ChatGPT são praticamente sinônimos; dominar um é dominar o tema",
+        "Além do ChatGPT existem outros chatbots, mas todos fazem essencialmente a mesma coisa",
+        "'IA' é bem maior que o chatbot de texto: inclui modelos de imagem, vídeo, áudio e multimodais, e há ainda a IA analítica (preditiva) que gera valor sem ser generativa",
+        "O que importa é só a IA generativa; a IA preditiva ficou ultrapassada"
+      ],
+      correta: 2,
+      feedback: "O AI Index 2026 (Stanford HAI) mostra que boa parte dos modelos mais usados hoje é de imagem, vídeo, áudio e multimodais — não só texto. E há a distinção entre IA generativa (cria conteúdo) e IA analítica/preditiva (prevê fraude, demanda), que já roda muito valor nas empresas. Tratar 'IA = ChatGPT' é o erro que faz entrar na conversa em desvantagem."
+    },
+    {
+      pergunta: "Sai a manchete: 'Google anuncia mais de US$ 150 bilhões em data centers e nuvem em 2025.' Em qual grupo do ecossistema esse anúncio se encaixa?",
+      alternativas: [
+        "Labs de modelos de fundação (quem fabrica os modelos)",
+        "Nuvens / hyperscalers (quem hospeda, distribui e banca a conta de infraestrutura)",
+        "SaaS com IA embutida (o software que a empresa já usa, com IA de fábrica)",
+        "Serviços e integração (quem monta a solução dentro do cliente)"
+      ],
+      correta: 1,
+      feedback: "Data center e nuvem são o território dos hyperscalers — Amazon, Microsoft, Google. O capex de infraestrutura é a marca desse grupo: o Google reportou mais de US$ 150 bi em 2025 (Stanford, AI Index 2026). Guardar o mapa dos cinco grupos — labs, nuvens, SaaS com IA embutida, agregadores, serviços — permite situar sozinho qualquer anúncio novo."
+    },
+    {
+      pergunta: "O cliente diz: 'Li que 95% das empresas não têm retorno com IA. É tudo hype, não vou investir agora.' Qual a melhor resposta?",
+      alternativas: [
+        "Concordar que o mercado está numa bolha e sugerir esperar a poeira baixar",
+        "Rebater que o número está errado e que quase todas as empresas já lucram com IA",
+        "Aceitar o número — é de organizações, não de 'pilotos' — e mostrar a virada: o que separa os ~5% que capturam valor dos 95% que não capturam não é o modelo nem a tecnologia, é a abordagem (integração, aprendizado, adaptação ao contexto)",
+        "Dizer que o retorno só vem depois que a regulamentação brasileira for aprovada"
+      ],
+      correta: 2,
+      feedback: "O dado é do MIT ('The GenAI Divide', 2025) e se refere a organizações — não confundir com '95% dos pilotos'. A conclusão não é 'IA é hype': o divisor entre ganhar e não ganhar é a abordagem, não a qualidade da tecnologia. Quem trata como problema de abordagem se posiciona para entrar na minoria que captura valor."
+    },
+    {
+      pergunta: "O cliente pergunta, receoso: 'Se eu investir agora e em três meses sair um modelo melhor, joguei dinheiro fora?' Qual a melhor resposta?",
+      alternativas: [
+        "Sim, infelizmente; a cada novo modelo o projeto precisa ser refeito do zero",
+        "Não se preocupe, os modelos vão parar de evoluir em breve",
+        "Depende de onde foi o investimento: se foi no modelo em si, há motivo de preocupação — ele se renova a cada trimestre; se foi na abordagem (processo, dados, verificação), o modelo novo só entra no lugar do antigo e o que você construiu continua valendo",
+        "Depende só de qual fornecedor de modelo você escolher; com o fornecedor certo, nunca sai nada melhor"
+      ],
+      correta: 2,
+      feedback: "Segundo o MIT ('The GenAI Divide', 2025), o que separa sucesso de fracasso não é a qualidade do modelo, é a abordagem. Um caso apresentado na AI Engineer World's Fair 2026 ilustra: a Shopify, com a estrutura certa, trocou o modelo por um mais enxuto e cortou o custo daquela operação em mais de 500x sem quebrar a operação — o modelo era peça trocável, não o alicerce. Sempre haverá um próximo modelo: esperar por ele é esperar para sempre."
+    },
+    {
+      pergunta: "O cliente afirma: 'Já resolvemos IA — demos Copilot para todo o time.' Qual a melhor resposta?",
+      alternativas: [
+        "Parabenizar: licença para todo mundo é o estágio mais avançado de adoção",
+        "Sugerir trocar o Copilot por uma ferramenta mais avançada",
+        "Perguntar quanto do uso virou resultado: quase todas as empresas já usam IA em alguma função, mas só uma fração vê impacto no lucro — ferramenta sem redesenho de processo vira licença parada",
+        "Explicar que Copilot é inseguro e deveria ser desligado"
+      ],
+      correta: 2,
+      feedback: "Pela McKinsey (State of AI 2025), 88% das empresas já usam IA em alguma função, mas só cerca de 6% são high performers. Comprar a camada de SaaS com IA embutida é compra de ferramenta, não estratégia — o divisor é redesenhar o trabalho e medir resultado, não acumular licenças."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>

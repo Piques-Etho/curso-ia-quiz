@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quizzes — IA para Executivos</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF; --borda:#D8DEDC;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--papel);color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px;line-height:1.5;min-height:100vh;
+    display:flex;justify-content:center}
+  .quadro{width:100%;max-width:520px;padding:32px 20px 48px}
+  .rotulo{font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--marca);font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;
+    font-size:26px;line-height:1.25;margin:4px 0 20px}
+  .item{display:block;background:#fff;border:1px solid var(--borda);
+    border-radius:12px;padding:18px 18px;margin-bottom:12px;
+    text-decoration:none;color:var(--tinta);
+    box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .item:hover{border-color:var(--marca);background:var(--marca-claro)}
+  .item .n{font-family:Georgia,serif;font-size:14px;color:var(--tinta-suave)}
+  .item .t{font-weight:600;font-size:18px;margin-top:2px}
+  .item .seta{float:right;color:var(--marca);font-weight:700}
+  .nota{color:var(--tinta-suave);font-size:14px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="quadro">
+  <div class="rotulo">IA para Executivos</div>
+  <h1>Quizzes de fixação</h1>
+
+  <a class="item" href="quiz-m01.html">
+    <span class="seta">›</span>
+    <div class="n">Módulo 1</div>
+    <div class="t">Como chegamos aqui e o ecossistema</div>
+  </a>
+
+  <p class="nota">Abra no navegador do celular, responda e compartilhe o
+  resultado no grupo. Novos módulos entram aqui a cada semana.</p>
+</div>
+</body>
+</html>
