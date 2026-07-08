@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 2",
+  titulo: "O modelo mental mínimo",
+  questoes: [
+    {
+      pergunta: "O que melhor descreve uma 'alucinação' de IA?",
+      alternativas: [
+        "Um travamento do sistema, quando a IA fica sem resposta e retorna erro",
+        "Uma resposta plausível e bem escrita, porém falsa, que o modelo entrega com total confiança",
+        "Um viés político embutido de propósito pelos criadores do modelo",
+        "Um ataque de hacker que corrompe as respostas da IA"
+      ],
+      correta: 1,
+      feedback: "Alucinação é o modelo produzir algo que soa certo e é falso — sem nenhum aviso de que não sabe. O perigo não é o erro óbvio; é o erro convincente. Confiança na resposta não é sinal de que ela está correta."
+    },
+    {
+      pergunta: "Segundo a própria OpenAI, por que os modelos tendem a 'chutar' em vez de dizer 'não sei'?",
+      alternativas: [
+        "Porque foram programados para nunca admitir limites, por decisão comercial",
+        "Porque não têm acesso à internet na hora de responder",
+        "Porque o treino e as avaliações premiam acertar — um palpite às vezes acerta, enquanto 'não sei' pontua zero",
+        "Porque os usuários preferem respostas erradas a respostas honestas"
+      ],
+      correta: 2,
+      feedback: "É como uma prova de múltipla escolha: chutar pode acertar, deixar em branco é zero garantido. Modelos avaliados só por acerto aprendem a arriscar um palpite confiante em vez de reconhecer incerteza — por isso a alucinação é previsível, não um defeito misterioso."
+    },
+    {
+      pergunta: "Uma IA genérica, ao responder uma pergunta sobre a SUA empresa, se baseia em quê?",
+      alternativas: [
+        "Ela consulta automaticamente os sistemas internos da sua empresa",
+        "Numa memória permanente que ela guarda de todas as conversas anteriores",
+        "Numa base de dados atualizada em tempo real sobre todas as empresas",
+        "No que aprendeu no treino geral, mais o que você colocar na frente dela na hora da pergunta — e nada mais"
+      ],
+      correta: 3,
+      feedback: "O modelo responde com dois insumos: o conhecimento geral do treino e o contexto que você entrega naquele momento. Do seu negócio ele não sabe nada, a menos que você mostre. Quem decide o que a IA vê é a empresa — não o modelo."
+    },
+    {
+      pergunta: "Prompting, RAG e fine-tuning são melhor entendidos como:",
+      alternativas: [
+        "Três níveis de qualidade: fine-tuning é sempre o melhor, prompting o mais fraco",
+        "Três marcas concorrentes de IA no mercado",
+        "Três respostas para problemas diferentes, ordenadas por custo — comece pela mais barata e só suba se precisar",
+        "Três etapas obrigatórias que todo projeto de IA segue nessa ordem"
+      ],
+      correta: 2,
+      feedback: "Não são degraus de sofisticação nem etapas obrigatórias: cada um resolve um problema distinto. Instrução (prompting) custa quase nada; dar o dado na hora (RAG) é um projeto; retreinar (fine-tuning) é caro e raramente necessário. A disciplina é começar barato."
+    },
+    {
+      pergunta: "Segundo a documentação da AWS, o que o fine-tuning (retreino) de fato ensina a um modelo?",
+      alternativas: [
+        "Comportamento — um padrão de resposta, formato e estilo — e NÃO conhecimento factual novo",
+        "Fatos novos: é a forma de colocar o conhecimento da sua empresa dentro da IA",
+        "A navegar na internet para buscar informação atualizada",
+        "A nunca mais cometer erros ou alucinações"
+      ],
+      correta: 0,
+      feedback: "A AWS é explícita: fine-tuning ensina o modelo a COMO responder, não O QUE saber. Para injetar fatos da empresa, o caminho é RAG (dar o dado na hora), não retreinar. Confundir os dois é o erro mais caro do mercado."
+    },
+    {
+      pergunta: "O cliente diz: 'A IA vive errando os dados do nosso catálogo de produtos. Vamos fazer um fine-tuning nela.' Qual a melhor resposta?",
+      alternativas: [
+        "Concordar: fine-tuning é a forma correta de ensinar o catálogo à IA",
+        "Sugerir trocar por um modelo de IA maior e mais caro",
+        "Explicar que catálogos não podem ser usados com IA, por segurança",
+        "É um problema de fato — a IA não conhece o catálogo. O caminho é dar esse dado na hora (RAG), não retreinar; retreino ensina comportamento, não fatos"
+      ],
+      correta: 3,
+      feedback: "Errar o catálogo é falta de fato, não de comportamento — e a própria AWS diz que fine-tuning não ensina fatos. A solução certa é RAG: pôr o catálogo atualizado na frente do modelo na hora da resposta. Fine-tuning aqui é o cheque mais caro para o problema errado."
+    },
+    {
+      pergunta: "O chatbot de um cliente prometeu a um consumidor uma condição que não existe na política da empresa. Como evitar isso?",
+      alternativas: [
+        "Não há o que fazer: se a IA disse, a responsabilidade é do fornecedor do modelo, não da empresa",
+        "Prender o chatbot à política real da empresa (dar o dado certo na hora) e revisar o que ele pode prometer — porque, perante o cliente, 'a IA disse' não isenta a empresa",
+        "Desligar o chatbot: nenhuma IA pode falar com clientes com segurança",
+        "Trocar o modelo por um da moda, que não comete esse erro"
+      ],
+      correta: 1,
+      feedback: "Num caso real, um tribunal responsabilizou a empresa pelo que o chatbot prometeu — 'a IA disse' não transferiu a culpa. A leitura mais provável é que o bot respondeu sem a política de verdade à frente e completou com algo plausível. O controle é grounding (dar o dado certo) mais revisão do que ele pode prometer."
+    },
+    {
+      pergunta: "O cliente conclui: 'Nossa IA não conhece nosso negócio, então vamos treinar um modelo próprio do zero.' Qual a resposta mais precisa?",
+      alternativas: [
+        "Correto: treinar um modelo próprio é a única forma de a IA conhecer o negócio",
+        "Correto, desde que a empresa contrate cientistas de dados para treinar do zero",
+        "Na maioria dos casos, o que falta é o dado na hora (RAG), não um modelo próprio — retreinar ensina comportamento, não os fatos da empresa, e é o caminho mais caro",
+        "O problema não tem solução: IA nunca conhece bem um negócio específico"
+      ],
+      correta: 2,
+      feedback: "'Não conhece meu negócio' é um problema de fato, e fatos entram por RAG, não por retreino. Treinar um modelo próprio é caro, lento e — segundo a AWS — nem ensina fatos, ensina comportamento. A disciplina: esgotar instrução e dado na hora antes de sequer cogitar retreinar."
+    },
+    {
+      pergunta: "Uma equipe usou IA para redigir um relatório ao cliente e as fontes citadas eram inventadas (como no caso Deloitte). Que controle teria evitado o prejuízo?",
+      alternativas: [
+        "Uma etapa simples de verificação das fontes antes da entrega — checar se cada referência existe de fato",
+        "Um modelo de IA mais avançado, que não erraria",
+        "Proibir o uso de IA em qualquer entregável",
+        "Confiar na IA, já que ela afirmou que as fontes eram reais"
+      ],
+      correta: 0,
+      feedback: "O erro era previsível — a IA completa com o que soa plausível. O que teria evitado o prejuízo era barato: verificar as fontes antes de assinar. O cliente não paga pela IA; paga pela sua assinatura embaixo do que a IA produziu. Pedir à própria IA que se autoconfira não resolve."
+    },
+    {
+      pergunta: "O cliente pergunta: 'Como eu confio no que a IA me entrega?' A melhor resposta de quem fala com autoridade é:",
+      alternativas: [
+        "'Confie na marca do modelo — os grandes fornecedores não erram'",
+        "'Quando a IA responde com confiança, pode confiar: confiança é sinal de acerto'",
+        "'Não dá para confiar em IA para nada importante; use só para rascunhos'",
+        "'Você não confia no palpite; monta um processo de verificação — como saber que a IA acertou antes de o seu cliente descobrir que ela errou'"
+      ],
+      correta: 3,
+      feedback: "Confiança da IA não é garantia de acerto. A resposta madura não é fé nem descrédito: é verificação embutida — medir a qualidade da saída antes que o erro chegue ao cliente. Separar demonstração de operação é o tema de um módulo à frente."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
