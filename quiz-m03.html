@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 3",
+  titulo: "O que as empresas fazem — e por que poucas capturam valor",
+  questoes: [
+    {
+      pergunta: "Uma pesquisa mostra que 88% das empresas 'usam IA'. O que esse número, sozinho, NÃO permite concluir?",
+      alternativas: [
+        "Que a IA se tornou comum no mundo corporativo",
+        "Que essas empresas estão capturando valor financeiro com IA — usar e capturar valor são coisas diferentes",
+        "Que muitas empresas ainda estão no começo da jornada",
+        "Que esse número reúne usos bem variados de IA"
+      ],
+      correta: 1,
+      feedback: "88% usam (McKinsey), mas só ~5% capturam valor substancial (BCG). Adoção mede uso, não retorno. Espalhar ferramenta é fácil; virar resultado no balanço é o raro."
+    },
+    {
+      pergunta: "Por que a 'adoção de IA' aparece como ~18% numa fonte e 88% em outra, no mesmo ano e país?",
+      alternativas: [
+        "Uma das fontes simplesmente está errada",
+        "Porque a adoção mudou muito rápido entre as duas medições",
+        "Porque medem coisas diferentes — uma conta firmas com uso operacional; a outra, qualquer uso, incluindo experimentação individual",
+        "Porque uma inclui os EUA e a outra o mundo todo"
+      ],
+      correta: 2,
+      feedback: "Unidade de análise diferente: 88% (McKinsey, qualquer uso, até individual) vs ~18% (Census, uso operacional firma-a-firma). Nenhuma está errada — respondem perguntas diferentes. Pergunte 'adoção de quê, medida em quem?'."
+    },
+    {
+      pergunta: "Um relatório mostra que a adoção de IA 'saltou' de um ano para o outro. Qual a leitura mais cuidadosa?",
+      alternativas: [
+        "A tecnologia deu um salto de qualidade naquele ano",
+        "As empresas finalmente entenderam o valor da IA",
+        "O salto prova que a IA virou indispensável",
+        "Vale checar se mudou a realidade ou só a definição da pesquisa — mudanças de redação já inflaram taxas de adoção sem o mundo mudar"
+      ],
+      correta: 3,
+      feedback: "O Census mudou a pergunta no fim de 2025 ('qualquer uma de 15 funções') e a taxa subiu sozinha. Quando um número pula, pergunte se mudou o mundo ou a régua."
+    },
+    {
+      pergunta: "Sobre ONDE a IA gera valor nas empresas, qual afirmação é a mais correta?",
+      alternativas: [
+        "O maior gasto hoje está em programação, mas a maior parte do valor potencial está em funções core como vendas, marketing e operações",
+        "O valor está distribuído por igual entre todas as funções",
+        "Só a área de TI captura valor com IA",
+        "Marketing é a única função onde a IA já deu retorno"
+      ],
+      correta: 0,
+      feedback: "Coding lidera o GASTO (Menlo); mas ~70% do VALOR potencial está em funções core — vendas/marketing, operações, cadeia (BCG). Onde já se investe muito não é necessariamente onde falta capturar."
+    },
+    {
+      pergunta: "Segundo a pesquisa, de onde vem o valor real da IA numa empresa?",
+      alternativas: [
+        "De ter o modelo de IA mais avançado do mercado",
+        "De rodar o maior número possível de pilotos",
+        "De redesenhar o processo em volta da IA e colocá-lo para operar em escala — não do piloto isolado",
+        "De comprar licenças para todos os funcionários"
+      ],
+      correta: 2,
+      feedback: "A curva é uso individual → piloto → processo redesenhado → operação. A BCG é clara: o valor não vem do piloto nem do caso isolado; vem de reformular o processo e escalar. A maioria trava na passagem piloto → operação."
+    },
+    {
+      pergunta: "O cliente diz: 'Já usamos IA em várias áreas, estamos à frente.' Qual a melhor resposta?",
+      alternativas: [
+        "Concordar: usar IA em várias áreas é o que define liderança",
+        "Sugerir usar IA em ainda mais áreas",
+        "Recomendar trocar por modelos de IA melhores",
+        "Perguntar quanto disso virou resultado medido: usar IA é comum; capturar valor é raro (~5%) — o que separa é redesenho de processo e medição, não a quantidade de áreas"
+      ],
+      correta: 3,
+      feedback: "Adoção não é valor: 88% usam, ~5% capturam valor substancial. 'Usamos em várias áreas' pode ser muita ferramenta espalhada e pouco resultado. A pergunta certa é sobre valor medido, não sobre cobertura."
+    },
+    {
+      pergunta: "Um fornecedor mostra um gráfico: 'a adoção de IA no seu setor dobrou em um ano!'. O que fazer antes de reagir?",
+      alternativas: [
+        "Aceitar: o dado veio de um fornecedor sério",
+        "Checar se mudou a realidade ou a definição — trocas de redação em pesquisas já dobraram taxas sem nada mudar na operação",
+        "Concluir que você está atrasado e comprar logo",
+        "Ignorar: estatística de adoção nunca serve pra nada"
+      ],
+      correta: 1,
+      feedback: "Números de adoção são sensíveis à definição — o Census mudou a pergunta e a taxa subiu sozinha. 'Dobrou' pode ser régua nova, não mundo novo. Nem aceitar de olhos fechados, nem descartar tudo: perguntar como foi medido."
+    },
+    {
+      pergunta: "O cliente diz: 'Ouvi que a maioria dos projetos de IA fracassa — isso não é bolha?'. Qual a melhor resposta?",
+      alternativas: [
+        "O número é real (>80% falham), mas a leitura é outra: a falha é de abordagem, não de tecnologia — quem redesenha processo e mede resultado captura valor",
+        "Concordar: se a maioria fracassa, melhor esperar a bolha passar",
+        "Discordar do número: quase todos os projetos dão certo",
+        "Dizer que o fracasso é sempre culpa do modelo de IA escolhido"
+      ],
+      correta: 0,
+      feedback: "RAND: >80% falham, e 'é mais sobre gente do que sobre máquina' — problema mal definido, falta de dado, perseguir a moda. Não é bolha; é execução. O divisor é a abordagem (MIT), não a tecnologia."
+    },
+    {
+      pergunta: "Um cliente de um setor tradicional, de baixa adoção de IA, conclui que 'esse trem não é pra gente'. Qual a melhor resposta?",
+      alternativas: [
+        "Concordar: setores tradicionais não têm uso para IA",
+        "Dizer que ele precisa do modelo de IA mais caro para compensar",
+        "Afirmar que adoção baixa significa que a IA não funciona ali",
+        "Mostrar que baixa adoção no setor é justamente onde ainda há vantagem de pioneiro — e apontar a função onde daria para começar a operar, não só pilotar"
+      ],
+      correta: 3,
+      feedback: "A adoção varia muito por setor (informação >39%, vários tradicionais bem abaixo). Setor de baixa adoção não é 'sem uso' — é onde o pioneiro ainda tem vantagem. A conversa vira 'qual função começar', não 'se dá'."
+    },
+    {
+      pergunta: "O cliente pergunta: 'o que vocês fariam diferente para eu finalmente ver retorno?'. A melhor resposta (neutra, de mercado) é:",
+      alternativas: [
+        "'Trocar por um modelo de IA mais moderno'",
+        "'Três coisas que separam quem captura valor: patrocínio da diretoria, redesenhar o processo em volta da IA e medir o resultado — não só ligar a ferramenta'",
+        "'Rodar mais pilotos até algum dar certo'",
+        "'Contratar mais cientistas de dados'"
+      ],
+      correta: 1,
+      feedback: "BCG: quem captura valor patrocina do topo, redesenha processo e mede resultado. A maioria só liga a ferramenta por cima do processo antigo e não mede — por isso não vê retorno. É abordagem, não tecnologia. (Conecta com o próximo módulo: separar demo de operação.)"
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
