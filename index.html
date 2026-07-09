@@ -3,64 +3,283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quizzes — IA para Executivos</title>
+<title>IA para Executivos — ETHO/Paretho</title>
 <style>
   :root{
     --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
     --marca:#0F5E68; --marca-claro:#E3EEEF; --borda:#D8DEDC;
+    --certo:#1F7A4D; --erro:#B3422E; --raio:14px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--papel);color:var(--tinta);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    font-size:17px;line-height:1.5;min-height:100vh;
-    display:flex;justify-content:center}
-  .quadro{width:100%;max-width:520px;padding:32px 20px 48px}
+    font-size:17px;line-height:1.5;min-height:100vh}
+  .quadro{width:100%;max-width:680px;margin:0 auto;padding:28px 20px 56px}
+
+  /* Gate de senha */
+  #gate{position:fixed;inset:0;background:var(--papel);z-index:50;
+    display:flex;align-items:center;justify-content:center;padding:24px}
+  .gate-cartao{width:100%;max-width:380px;text-align:center}
+  .gate-cartao .rotulo{font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--marca);font-weight:600}
+  .gate-cartao h1{font-family:Georgia,serif;font-size:28px;font-weight:600;
+    line-height:1.2;margin:6px 0 6px}
+  .gate-cartao p{color:var(--tinta-suave);font-size:15px;margin-bottom:22px}
+  .campo{width:100%;padding:14px 15px;border:1.5px solid var(--borda);
+    border-radius:10px;font:inherit;margin-bottom:12px;text-align:center}
+  .campo:focus{outline:2px solid var(--marca);border-color:var(--marca)}
+  .botao{display:block;width:100%;padding:15px;border:none;border-radius:10px;
+    background:var(--marca);color:#fff;font:inherit;font-weight:600;font-size:16px;
+    cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao:disabled{opacity:.55;cursor:default}
+  .aviso-erro{color:var(--erro);font-size:14px;margin-top:10px;min-height:20px}
+
+  /* Cabecalho */
   .rotulo{font-size:13px;letter-spacing:.08em;text-transform:uppercase;
     color:var(--marca);font-weight:600}
-  h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;
-    font-size:26px;line-height:1.25;margin:4px 0 20px}
-  .item{display:block;background:#fff;border:1px solid var(--borda);
-    border-radius:12px;padding:18px 18px;margin-bottom:12px;
-    text-decoration:none;color:var(--tinta);
-    box-shadow:0 1px 3px rgba(22,35,42,.06)}
-  .item:hover{border-color:var(--marca);background:var(--marca-claro)}
-  .item .n{font-family:Georgia,serif;font-size:14px;color:var(--tinta-suave)}
-  .item .t{font-weight:600;font-size:18px;margin-top:2px}
-  .item .seta{float:right;color:var(--marca);font-weight:700}
-  .nota{color:var(--tinta-suave);font-size:14px;margin-top:20px}
+  h1.titulo{font-family:Georgia,serif;font-weight:600;font-size:30px;
+    line-height:1.2;margin:4px 0 8px}
+  .intro{color:var(--tinta-suave);font-size:15.5px;margin-bottom:28px}
+
+  /* Bloco */
+  .bloco{margin-bottom:34px}
+  .bloco-cab{border-left:4px solid var(--marca);padding-left:14px;margin-bottom:14px}
+  .bloco-num{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--marca);font-weight:700}
+  .bloco-tit{font-family:Georgia,serif;font-size:22px;font-weight:600;margin:2px 0 4px}
+  .bloco-desc{color:var(--tinta-suave);font-size:15px}
+
+  /* Modulo (linha da "tabela") */
+  .mod{background:#fff;border:1px solid var(--borda);border-radius:var(--raio);
+    padding:16px 18px;margin-bottom:10px;box-shadow:0 1px 3px rgba(22,35,42,.05)}
+  .mod-topo{display:flex;gap:10px;align-items:baseline}
+  .mod-n{font-family:Georgia,serif;font-size:14px;color:var(--tinta-suave);
+    flex-shrink:0}
+  .mod-tit{font-weight:600;font-size:17px}
+  .mod-desc{color:var(--tinta-suave);font-size:14.5px;margin:4px 0 0 0}
+  .mod.embreve{opacity:.6}
+  .tag-embreve{display:inline-block;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.05em;color:var(--tinta-suave);
+    border:1px solid var(--borda);border-radius:20px;padding:2px 9px;margin-left:8px}
+
+  .acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .acao{display:inline-flex;align-items:center;gap:6px;padding:9px 14px;
+    border-radius:9px;font-size:14.5px;font-weight:600;text-decoration:none;
+    border:1.5px solid var(--marca);color:var(--marca);background:#fff;
+    cursor:pointer;font-family:inherit}
+  .acao.cheia{background:var(--marca);color:#fff}
+  .acao:active{transform:translateY(1px)}
+  .acao:disabled{opacity:.5;cursor:default}
+
+  .player{margin-top:12px;display:none}
+  .player.aberto{display:block}
+  .player audio{width:100%}
+  .status{font-size:13px;color:var(--tinta-suave);margin-top:6px}
+
+  .rodape{color:var(--tinta-suave);font-size:13.5px;margin-top:30px;
+    border-top:1px solid var(--borda);padding-top:16px}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 </style>
 </head>
 <body>
-<div class="quadro">
-  <div class="rotulo">IA para Executivos</div>
-  <h1>Quizzes de fixação</h1>
 
-  <a class="item" href="quiz-m01.html">
-    <span class="seta">›</span>
-    <div class="n">Módulo 1</div>
-    <div class="t">Como chegamos aqui e o ecossistema</div>
-  </a>
-
-  <a class="item" href="quiz-m02.html">
-    <span class="seta">›</span>
-    <div class="n">Módulo 2</div>
-    <div class="t">O modelo mental mínimo</div>
-  </a>
-
-  <a class="item" href="quiz-m03.html">
-    <span class="seta">›</span>
-    <div class="n">Módulo 3</div>
-    <div class="t">O que as empresas fazem — e por que poucas capturam valor</div>
-  </a>
-
-  <a class="item" href="quiz-m04.html">
-    <span class="seta">›</span>
-    <div class="n">Módulo 4</div>
-    <div class="t">Da demo à produção: o que separa uma da outra</div>
-  </a>
-
-  <p class="nota">Abra no navegador do celular, responda e compartilhe o
-  resultado no grupo. Cada um faz no seu ritmo.</p>
+<!-- ===== GATE DE SENHA ===== -->
+<div id="gate">
+  <div class="gate-cartao">
+    <div class="rotulo">IA para Executivos</div>
+    <h1>Área dos sócios</h1>
+    <p>Conteúdo protegido. Digite a senha do grupo para acessar os áudios e os quizzes.</p>
+    <input class="campo" id="senha" type="password" placeholder="Senha" autocomplete="off">
+    <button class="botao" id="btn-entrar" onclick="entrar()">Entrar</button>
+    <div class="aviso-erro" id="erro"></div>
+  </div>
 </div>
+
+<!-- ===== CONTEUDO (revelado apos a senha) ===== -->
+<div class="quadro" id="conteudo" style="display:none">
+  <div class="rotulo">IA para Executivos · ETHO/Paretho</div>
+  <h1 class="titulo">Trilha de conhecimento</h1>
+  <p class="intro">Oito módulos, três movimentos. Cada um você escuta no seu ritmo
+    e fixa com um quiz rápido. A meta é uma só: falar de IA com autoridade,
+    de igual para igual com qualquer C-level.</p>
+  <div id="blocos"></div>
+  <div class="rodape">
+    Ouça no fone, faça o quiz no fim e compartilhe o resultado no grupo.
+    Novos módulos aparecem aqui conforme saem.
+  </div>
+</div>
+
+<script>
+/* ================= DADOS DO CURSO ================= */
+const BLOCOS = [
+  {
+    num: "Movimento 1",
+    titulo: "A base",
+    desc: "Como a IA chegou até aqui, o modelo mental mínimo para não ser enganado, e por que quase todo mundo usa e quase ninguém captura valor.",
+    modulos: [
+      {n:1, titulo:"Como chegamos aqui e o ecossistema",
+       desc:"A corrida dos últimos anos e o mapa de quem é quem no mercado — para situar qualquer novidade sozinho.",
+       audio:"01", quiz:"quiz-m01.html"},
+      {n:2, titulo:"O modelo mental mínimo",
+       desc:"Por que a IA erra (e por que é administrável), por que os seus dados importam, e as três formas de ajustá-la.",
+       audio:"02", quiz:"quiz-m02.html"},
+      {n:3, titulo:"O que as empresas fazem — e por que poucas capturam valor",
+       desc:"Adoção não é valor: onde a IA já é operação e por que a grande maioria captura tão pouco.",
+       audio:"03", quiz:"quiz-m03.html"},
+    ]
+  },
+  {
+    num: "Movimento 2",
+    titulo: "O que separa quem ganha",
+    desc: "Da demonstração à operação que aguenta, a conta do que custa e do que retorna, e as pessoas que fazem a IA virar resultado.",
+    modulos: [
+      {n:4, titulo:"Da demo à produção",
+       desc:"Por que projetos falham e as 5 perguntas que separam uma demonstração de uma operação de verdade.",
+       audio:"04", quiz:"quiz-m04.html"},
+      {n:5, titulo:"A economia da IA no negócio",
+       desc:"O que custa, o que retorna, e quando construir em casa faz sentido — e quando é armadilha.",
+       breve:true},
+      {n:6, titulo:"Pessoas, adoção e a organização",
+       desc:"Por que 'compramos a ferramenta e ninguém usa' — e como fazer a adoção realmente acontecer.",
+       breve:true},
+    ]
+  },
+  {
+    num: "Movimento 3",
+    titulo: "A blindagem e a síntese",
+    desc: "Risco, governança e regulação, e a síntese para conversar sobre IA com autoridade, de igual para igual.",
+    modulos: [
+      {n:7, titulo:"Risco, governança e regulação",
+       desc:"LGPD, o PL brasileiro e o esqueleto comum de toda regra de IA — o que muda na prática.",
+       breve:true},
+      {n:8, titulo:"Síntese: conversando com autoridade",
+       desc:"Um quiz de cenários e a simulação final para fechar a trilha com autoridade.",
+       breve:true},
+    ]
+  }
+];
+
+/* ================= CRIPTOGRAFIA (mesmo esquema do encrypt.js) ================= */
+const ITER = 200000;
+let SENHA = null;
+const blobs = {}; // cache de URLs de audio decodificado
+
+async function deriveKey(pw, salt){
+  const bk = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw),
+    "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:ITER, hash:"SHA-256"},
+    bk, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+}
+async function decrypt(url, pw){
+  const buf = new Uint8Array(await (await fetch(url)).arrayBuffer());
+  const salt = buf.slice(0,16), iv = buf.slice(16,28), ct = buf.slice(28);
+  const key = await deriveKey(pw, salt);
+  return await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, ct);
+}
+
+/* ================= GATE ================= */
+async function entrar(){
+  const pw = document.getElementById("senha").value;
+  const erro = document.getElementById("erro");
+  const btn = document.getElementById("btn-entrar");
+  erro.textContent = ""; btn.disabled = true; btn.textContent = "Verificando...";
+  try {
+    const pt = await decrypt("audio/verifier.enc", pw);
+    if (new TextDecoder().decode(pt) !== "etho-ok") throw new Error("bad");
+    SENHA = pw;
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("conteudo").style.display = "block";
+    montar();
+  } catch(e){
+    erro.textContent = "Senha incorreta.";
+    btn.disabled = false; btn.textContent = "Entrar";
+  }
+}
+document.getElementById("senha").addEventListener("keydown", e=>{
+  if (e.key === "Enter") entrar();
+});
+
+/* ================= RENDER ================= */
+function montar(){
+  const raiz = document.getElementById("blocos");
+  raiz.innerHTML = "";
+  BLOCOS.forEach(b => {
+    const sec = document.createElement("div");
+    sec.className = "bloco";
+    sec.innerHTML =
+      '<div class="bloco-cab"><div class="bloco-num">'+b.num+'</div>'+
+      '<div class="bloco-tit">'+b.titulo+'</div>'+
+      '<div class="bloco-desc">'+b.desc+'</div></div>';
+    b.modulos.forEach(m => sec.appendChild(linhaModulo(m)));
+    raiz.appendChild(sec);
+  });
+}
+function linhaModulo(m){
+  const div = document.createElement("div");
+  div.className = "mod" + (m.breve ? " embreve" : "");
+  let acoes = "";
+  if (m.breve){
+    acoes = '<div class="acoes"><span class="tag-embreve">Em breve</span></div>';
+  } else {
+    acoes =
+      '<div class="acoes">'+
+        '<button class="acao cheia" id="ouvir-'+m.n+'" onclick="ouvir('+m.n+')">▶ Ouvir</button>'+
+        '<button class="acao" id="baixar-'+m.n+'" onclick="baixar('+m.n+')">↓ Baixar áudio</button>'+
+        '<a class="acao" href="'+m.quiz+'">✎ Fazer o quiz</a>'+
+      '</div>'+
+      '<div class="player" id="player-'+m.n+'"><audio controls></audio>'+
+        '<div class="status" id="status-'+m.n+'"></div></div>';
+  }
+  div.innerHTML =
+    '<div class="mod-topo"><span class="mod-n">Módulo '+m.n+'</span>'+
+      '<span class="mod-tit">'+m.titulo+(m.breve?'<span class="tag-embreve">Em breve</span>':'')+'</span></div>'+
+    '<div class="mod-desc">'+m.desc+'</div>'+ acoes;
+  return div;
+}
+
+/* ================= AUDIO ================= */
+async function obterBlob(n){
+  const id = String(n).padStart(2,"0");
+  if (blobs[id]) return blobs[id];
+  const status = document.getElementById("status-"+n);
+  if (status) status.textContent = "Decodificando o áudio... (alguns segundos)";
+  const pt = await decrypt("audio/modulo-"+id+".m4a.enc", SENHA);
+  const url = URL.createObjectURL(new Blob([pt], {type:"audio/mp4"}));
+  blobs[id] = url;
+  if (status) status.textContent = "";
+  return url;
+}
+async function ouvir(n){
+  const btn = document.getElementById("ouvir-"+n);
+  const player = document.getElementById("player-"+n);
+  btn.disabled = true; btn.textContent = "Carregando...";
+  try {
+    const url = await obterBlob(n);
+    const audio = player.querySelector("audio");
+    audio.src = url; player.classList.add("aberto");
+    audio.play();
+    btn.textContent = "▶ Ouvir";
+  } catch(e){
+    document.getElementById("status-"+n).textContent = "Erro ao decodificar. Recarregue e tente de novo.";
+    btn.textContent = "▶ Ouvir";
+  }
+  btn.disabled = false;
+}
+async function baixar(n){
+  const id = String(n).padStart(2,"0");
+  const btn = document.getElementById("baixar-"+n);
+  btn.disabled = true; const txt = btn.textContent; btn.textContent = "Preparando...";
+  try {
+    const url = await obterBlob(n);
+    const a = document.createElement("a");
+    a.href = url; a.download = "modulo-"+id+".m4a";
+    document.body.appendChild(a); a.click(); a.remove();
+  } catch(e){
+    document.getElementById("status-"+n).textContent = "Erro ao decodificar. Tente de novo.";
+  }
+  btn.disabled = false; btn.textContent = txt;
+}
+</script>
 </body>
 </html>

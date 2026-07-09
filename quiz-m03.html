@@ -84,6 +84,24 @@
 </style>
 </head>
 <body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
 <div class="quadro">
   <div class="cabecalho">
     <div class="modulo" id="rotulo-modulo"></div>
