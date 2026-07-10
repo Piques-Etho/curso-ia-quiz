@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 6",
+  titulo: "Pessoas, adoção e a organização",
+  questoes: [
+    {
+      pergunta: "A Gartner prevê que pelo menos 30% dos projetos de IA generativa serão abandonados após a prova de conceito. A leitura correta é:",
+      alternativas: [
+        "A tecnologia ainda é imatura; por isso um terço dos projetos falha já nos testes iniciais",
+        "São os 30% que escolheram o modelo de IA errado; com o modelo certo, não abandonariam",
+        "É um problema de custo apenas: os projetos morrem porque a IA ficou cara demais para escalar",
+        "O gargalo é a adoção, não a técnica: o piloto funciona, mas a empresa não muda o trabalho"
+      ],
+      correta: 3,
+      feedback: "Os projetos morrem DEPOIS de funcionar no teste — não é a IA que falha, é a organização que não adota: dado bagunçado, custo, e sobretudo ninguém muda o jeito de trabalhar. É gargalo de adoção, não de tecnologia."
+    },
+    {
+      pergunta: "Entre 25 fatores testados pela McKinsey, qual mais se correlaciona com impacto no lucro (EBIT) trazido pela IA?",
+      alternativas: [
+        "Redesenhar o fluxo de trabalho — mudar como o trabalho é feito, não só dar a ferramenta",
+        "Escolher o modelo de IA mais avançado disponível no mercado naquele momento",
+        "Distribuir o acesso à IA para o maior número possível de funcionários, área por área",
+        "Aumentar o orçamento de tecnologia para bancar mais licenças e mais infraestrutura"
+      ],
+      correta: 0,
+      feedback: "De 25 fatores, redesenhar o fluxo de trabalho é o que MAIS move o EBIT. Não é o modelo, nem a quantidade de licenças, nem o tamanho do orçamento — é mudar como o trabalho é feito, com a IA no meio."
+    },
+    {
+      pergunta: "Só cerca de 21% das empresas redesenharam fundamentalmente algum fluxo de trabalho com IA. O que os outros ~79% costumam fazer?",
+      alternativas: [
+        "Constroem a própria IA em casa, em vez de comprar pronta de um fornecedor externo",
+        "Dão a ferramenta nova para fazer a MESMA tarefa do mesmo jeito de antes",
+        "Abandonam a IA por completo depois de não verem retorno já no primeiro ano de uso",
+        "Trocam de fornecedor de IA a cada trimestre à procura de um resultado melhor"
+      ],
+      correta: 1,
+      feedback: "A maioria empilha a IA no cargo antigo — ferramenta nova, tarefa velha — e por isso o ganho não vem. Redesenhar o trabalho é o que dá resultado, e é justamente o que quase ninguém faz (só cerca de um em cada cinco)."
+    },
+    {
+      pergunta: "A McKinsey aponta a supervisão do CEO como um dos fatores de maior impacto. Na prática, 'patrocínio da liderança' quer dizer:",
+      alternativas: [
+        "O CEO assinar a política de uso de IA e delegar toda a execução para a área de tecnologia",
+        "Mandar um comunicado geral pedindo que todos passem a usar a IA no dia a dia",
+        "O topo ser dono da agenda e usar a IA na frente do time, dando o exemplo",
+        "Contratar uma consultoria externa para conduzir o projeto de IA da empresa"
+      ],
+      correta: 2,
+      feedback: "Patrocínio visível não é assinar papel nem mandar e-mail (o cemitério da adoção) — é o líder puxar a agenda e usar na frente do time. Quando o chefe mostra como usou, vale mais que dez comunicados."
+    },
+    {
+      pergunta: "Por que treinamento 'por função' costuma funcionar melhor que um treinamento genérico de IA?",
+      alternativas: [
+        "Porque é mais barato treinar cada área separadamente do que a empresa toda de uma vez",
+        "Porque só os cargos técnicos conseguem aproveitar a IA; os demais não precisam de treino",
+        "Porque a lei exige treinamento específico por área antes de liberar o uso de IA no trabalho",
+        "Porque o que o vendedor faz com IA é diferente do que o jurídico faz; genérico não vira uso"
+      ],
+      correta: 3,
+      feedback: "Uso real é específico: o vendedor, o jurídico e o financeiro usam a IA para coisas diferentes. Treino genérico ensina a teoria e ninguém aplica; treino por função mostra a tarefa concreta de cada um — e aí pega."
+    },
+    {
+      pergunta: "Um sócio desabafa: 'compramos o Copilot pra três mil pessoas e quase ninguém usa'. A melhor recomendação é:",
+      alternativas: [
+        "Comprar uma ferramenta de IA diferente; essa provavelmente não é boa o bastante",
+        "Cortar as licenças e esperar a tecnologia amadurecer mais um ou dois anos",
+        "Redesenhar o trabalho e pôr a liderança no exemplo — não distribuir mais acesso",
+        "Tornar o uso obrigatório e cobrar de cada um um número mínimo de acessos por semana"
+      ],
+      correta: 2,
+      feedback: "O problema não é a ferramenta nem a falta de acesso — é que ninguém mudou o trabalho e o topo não puxa. Comprar outra IA ou obrigar o uso não resolve; redesenhar o processo e o líder dar o exemplo, sim."
+    },
+    {
+      pergunta: "Numa reunião, alguém comemora: 'já temos IA — noventa por cento dos funcionários têm licença'. O reparo é:",
+      alternativas: [
+        "Licença não é adoção: o que importa é quantos usam TODA semana, e para qual tarefa",
+        "Noventa por cento é pouco; só faz diferença quando 100% da empresa tiver acesso",
+        "O número está certo e já prova, sozinho, que a empresa capturou o valor da IA",
+        "O que falta é medir quantas horas de IA foram compradas no total do contrato assinado"
+      ],
+      correta: 0,
+      feedback: "Ter licença é ter a matrícula da academia — ninguém emagrece por isso. Adoção se mede pelo uso real (quantos usam toda semana, e para quê), não pelo número de acessos distribuídos."
+    },
+    {
+      pergunta: "'Copiloto para todo mundo' funciona como estratégia de adoção?",
+      alternativas: [
+        "Sim, contanto que a empresa compre licença suficiente e comunique bem o lançamento",
+        "Não; nada de IA em trabalho de escritório rende, então é dinheiro perdido de qualquer jeito",
+        "Depende do preço da licença: se for barata, distribuir para todos já compensa por si só",
+        "Sozinho não: o que faz adoção é o pacote — líder no exemplo, redesenho e treino por função"
+      ],
+      correta: 3,
+      feedback: "Distribuir para todos e torcer é o caminho dos 30% que morrem. O que funciona é o pacote: liderança no exemplo, trabalho redesenhado, treino por função, incentivo e medir quem usa. A licença é o começo, não a estratégia."
+    },
+    {
+      pergunta: "Uma empresa deu IA ao time e disse 'usem para fazer o de sempre, só que mais rápido'. Seis meses depois, o ganho não apareceu no resultado. Por quê?",
+      alternativas: [
+        "Porque empilhou a ferramenta no trabalho antigo, em vez de redesenhar o processo",
+        "Porque seis meses é pouco; o ganho de IA só começa a aparecer depois de três anos",
+        "Porque o time deve ter usado a IA de forma errada, sem o treinamento técnico devido",
+        "Porque faltou comprar a versão mais cara da ferramenta, que é a que traz resultado"
+      ],
+      correta: 0,
+      feedback: "'Ferramenta nova para a tarefa velha' é motor de foguete numa carroça que ninguém redesenhou — o ganho não aparece. Sem mudar o processo (quem faz o quê, com a IA no meio), a IA vira só mais uma assinatura."
+    },
+    {
+      pergunta: "O CEO mandou um e-mail para toda a empresa: 'a partir de hoje, usem IA'. Nada mudou. O que faltou?",
+      alternativas: [
+        "Faltou repetir o comunicado com mais frequência, até a mensagem finalmente pegar",
+        "Faltou o CEO usar na frente do time e ser dono da agenda da adoção",
+        "Faltou tornar o uso obrigatório, com punição para quem não aderir ao novo processo",
+        "Faltou contratar mais especialistas de IA para reforçar a equipe técnica da empresa"
+      ],
+      correta: 1,
+      feedback: "O e-mail 'usem IA' é o cemitério da adoção — todo mundo recebe, ninguém abre. Patrocínio é o líder no exemplo: usar na frente, puxar a prioridade, cobrar. Repetir o comunicado ou punir não cria adoção; o topo dando o exemplo, sim."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
