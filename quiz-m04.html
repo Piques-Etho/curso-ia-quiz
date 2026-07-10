@@ -143,10 +143,10 @@ const QUIZ = {
     {
       pergunta: "Por que uma demonstração de IA impressionante NÃO prova que a solução vai funcionar na operação?",
       alternativas: [
-        "Porque demos usam modelos diferentes dos de produção",
-        "Porque a demo é feita para impressionar, e a sensação de que 'funciona' não é evidência — só a medição prova; num estudo, usuários sentiram ganho e na verdade ficaram mais lentos",
-        "Porque toda demo é fraudada",
-        "Porque IA nunca funciona fora do laboratório"
+        "Porque a demo usa dados escolhidos a dedo e prova apenas que a IA lida bem com casos fáceis; no caso difícil do cliente, ela para de funcionar.",
+        "Porque a sensação de que 'funciona' não é prova: num estudo, quem usou IA se sentiu mais rápido, mas a medição mostrou que ficou mais lento.",
+        "Porque a demo exibe respostas roteiradas de antemão; por definição, ela nunca reflete como o produto reage a uma pergunta nova de verdade.",
+        "Porque, fora do laboratório, a IA exige uma infraestrutura pesada que poucas empresas mantêm, e sem ela o modelo simplesmente trava."
       ],
       correta: 1,
       feedback: "No ensaio da METR, devs experientes sentiram ~20% de ganho e ficaram 19% mais lentos — sem perceber. A demo mostra o brilho e esconde o retrabalho. Peça a medição, não a demonstração."
@@ -154,32 +154,32 @@ const QUIZ = {
     {
       pergunta: "Neste módulo, 'verificar' que a IA funciona significa:",
       alternativas: [
-        "Perguntar ao fornecedor se ele confia no produto",
-        "Rodar a demo mais algumas vezes",
-        "Escolher o modelo com melhor nota em benchmark público",
-        "Medir as respostas contra critérios definidos por quem entende do assunto — de forma repetível — em vez de 'achar que ficou bom'"
+        "Perguntar ao fornecedor se ele confia no produto e reunir depoimentos dos clientes que ele já atende, tratando essa confiança como prova.",
+        "Rodar a mesma demo mais algumas vezes e conferir se ela repete o bom resultado que impressionou na primeira apresentação.",
+        "Escolher o modelo com a melhor nota no ranking público do momento e confiar que essa liderança se traduz no seu caso.",
+        "Medir as respostas contra critérios de quem entende do assunto, de forma repetível — não no 'achei que ficou bom'."
       ],
       correta: 3,
       feedback: "Verificar é medição contra critério, não achismo. Exemplo: a OpenAI pôs 262 médicos para escrever critérios e um sistema pontua cada resposta. Critério, medida, repetível."
     },
     {
-      pergunta: "Sobre a taxa de erro dos melhores modelos em tarefas realistas difíceis, o mais correto é:",
+      pergunta: "Sobre o quanto os melhores modelos acertam numa tarefa realista difícil, o mais correto é:",
       alternativas: [
-        "Até o melhor modelo erra bastante (numa avaliação difícil, o topo fica em torno de 60%, e na versão mais dura, ~um terço) — errar é o estado normal, não defeito passageiro",
-        "Os melhores modelos já acertam praticamente 100%",
-        "Os erros somem quando o modelo é bem treinado",
-        "Só modelos baratos erram"
+        "Mesmo o melhor modelo acerta só cerca de 60% numa tarefa realista difícil (na mais dura, perto de um terço); errar é o normal, e a operação precisa verificar.",
+        "Os melhores modelos já acertam quase tudo nas tarefas realistas, e o pouco que ainda falham some com um bom ajuste de treino.",
+        "Nessas tarefas o acerto até cai, mas só nos testes artificiais; no trabalho real, com bom contexto, o modelo quase não erra.",
+        "O acerto baixo é coisa dos modelos mais baratos; quem paga pela versão de ponta leva um desempenho praticamente sem falhas."
       ],
       correta: 0,
-      feedback: "No HealthBench, o melhor modelo faz ~60% (na versão Hard, ~um terço). Errar é normal. Por isso a pergunta não é 'a IA erra?' (erra), e sim 'você pega o erro antes ou depois do cliente ver?'."
+      feedback: "No HealthBench, o melhor modelo acerta ~60% (na versão Hard, ~um terço). Errar é o normal. Por isso a pergunta não é 'a IA erra?' (erra), e sim 'você pega o erro antes ou depois do cliente ver?'."
     },
     {
       pergunta: "Um fornecedor diz que a IA dele 'aumenta a produtividade da equipe'. Qual a leitura mais cuidadosa do 'ganho'?",
       alternativas: [
-        "Se ele diz que aumenta, aumenta",
-        "O ganho é a velocidade com que a IA produz",
-        "O ganho real é a velocidade da IA MENOS o custo de revisar e corrigir o que ela produz — sem essa conta (e sem linha de base), pode ser sensação, não resultado",
-        "Produtividade com IA não pode ser medida"
+        "Se um fornecedor sério afirma que aumenta, o ganho é real; questionar cada número só trava a decisão de compra.",
+        "O ganho é a velocidade com que a IA produz o rascunho; quanto mais rápido ela entrega, maior o retorno para a equipe.",
+        "O ganho real é a velocidade da IA menos o custo de revisar e corrigir o que ela faz; sem essa conta, pode ser só sensação.",
+        "Produtividade com IA não se mede de verdade: como cada tarefa é diferente, qualquer número vira estimativa e não permite comparação honesta."
       ],
       correta: 2,
       feedback: "No estudo METR, o ganho bruto era comido pelo retrabalho — e os usuários não perceberam. Ganho real = velocidade menos verificação/correção. Sem linha de base medida, o 'aumento' pode ser imaginário."
@@ -187,10 +187,10 @@ const QUIZ = {
     {
       pergunta: "Por que importa perguntar se a operação de IA fica 'presa a um único modelo'?",
       alternativas: [
-        "Porque o modelo mais novo é sempre melhor",
-        "Porque o modelo se renova a cada trimestre; quem amarra a operação a um só refaz tudo a cada troca — sistema portátil troca o modelo sem quebrar a operação",
-        "Porque usar um só modelo é ilegal",
-        "Porque modelos únicos são sempre mais caros"
+        "Porque o modelo mais novo costuma render mais, então o certo é migrar assim que ele sai, sem prender a operação a uma versão velha.",
+        "Porque o modelo se renova a cada trimestre; amarrar a operação a um só é refazer tudo a cada troca — um portátil troca sem quebrar.",
+        "Porque manter um único modelo concentra risco de segurança e obriga a passar por auditoria a cada renovação de contrato.",
+        "Porque a questão do fornecedor único é só de preço: com um bom desconto por volume no contrato, a dependência de um só modelo deixa de importar."
       ],
       correta: 1,
       feedback: "Caso Shopify (M1): trocou o modelo sem quebrar a operação porque o valor estava no sistema em volta, não no modelo. Lock-in num modelo vira retrabalho a cada lançamento."
@@ -198,10 +198,10 @@ const QUIZ = {
     {
       pergunta: "O cliente sai deslumbrado de uma demo de IA e quer assinar na hora. Qual a melhor contribuição do sócio?",
       alternativas: [
-        "Concordar: a demo provou que funciona",
-        "Sugerir esperar o próximo modelo",
-        "Pedir um desconto",
-        "Pedir para ver a medição, não a demonstração: 'como vocês medem que a IA acerta, e o que acontece quando ela erra?' — a demo é a foto do cardápio, não a cozinha"
+        "Concordar e assinar na hora: a demo já mostrou o produto acertando, e esperar mais só faz o cliente perder o encantamento.",
+        "Sugerir esperar o próximo modelo, que deve chegar em poucos meses mais preciso, antes de comprometer a operação com a versão de hoje.",
+        "Pedir um bom desconto aproveitando o entusiasmo, para que o preço não vire o obstáculo lá na frente da negociação.",
+        "Pedir para ver a medição, não a demonstração: 'como vocês medem que a IA acerta, e o que acontece no dia em que ela erra?'."
       ],
       correta: 3,
       feedback: "Demo impressiona; operação aguenta. A demo é ensaiada (só as perguntas que a IA acerta). Antes de assinar, peça o processo de medição e o tratamento de erro — as duas primeiras das 5 perguntas."
@@ -209,10 +209,10 @@ const QUIZ = {
     {
       pergunta: "Um fornecedor garante: 'nosso modelo praticamente não erra'. Como o sócio deve reagir?",
       alternativas: [
-        "Tratar como sinal de alerta: até os melhores modelos erram bastante em tarefas realistas — quem finge que não erra não tem como pegar o erro antes do cliente",
-        "Ficar tranquilo: é o fornecedor certo",
-        "Pedir que ele prove com a mesma demo de novo",
-        "Trocar por um modelo ainda mais avançado"
+        "Tratar como alerta: até os melhores modelos erram em tarefas reais, e quem nega o erro não consegue pegá-lo antes do cliente ver.",
+        "Ficar tranquilo e seguir com ele: um fornecedor que garante uma taxa de erro tão baixa está assumindo um compromisso sério de qualidade.",
+        "Pedir que ele prove repetindo a mesma demonstração: se a IA acertar de novo nas mesmas perguntas, a garantia estaria confirmada.",
+        "Trocar logo por um modelo ainda mais avançado, já que a versão de ponta praticamente elimina os erros que preocupam o cliente."
       ],
       correta: 0,
       feedback: "Errar é o estado normal (o melhor faz ~60% no HealthBench difícil). Um fornecedor que nega o erro é o mais perigoso — não tem monitoramento nem alçada humana para pegar a falha antes do cliente. Pergunte 'quando erra, o que acontece?'."
@@ -220,10 +220,10 @@ const QUIZ = {
     {
       pergunta: "O fornecedor promete '30% de aumento de produtividade'. Qual a melhor pergunta?",
       alternativas: [
-        "'Consegue fazer 40%?'",
-        "'Qual o preço por usuário?'",
-        "'Qual é a linha de base e como isso foi medido?' — sem antes-e-depois medido, o número pode ser a sensação de ganho que, no estudo, escondia uma perda",
-        "'Esse número vale para o mundo todo?'"
+        "'Consegue chegar a 40%?' — puxar por um número maior antes de fechar, para extrair o máximo que a proposta permitir.",
+        "'Qual o preço por usuário?' — o custo mensal por pessoa conta, mas só depois de saber se o ganho de 30% é de verdade.",
+        "'Qual é a linha de base e como isso foi medido?' — sem um antes-e-depois medido, o 30% pode ser a sensação de ganho que escondia uma perda.",
+        "'Esse número vale no Brasil?' — a praça importa, mas antes é preciso saber se esse 30% foi mesmo medido lá fora."
       ],
       correta: 2,
       feedback: "METR: as pessoas sentiram ganho e mediram perda. Um número de produtividade sem linha de base é conversa. A pergunta certa expõe se há medição real ou só entusiasmo de demo."
@@ -231,10 +231,10 @@ const QUIZ = {
     {
       pergunta: "O fornecedor diz que a solução 'só funciona com o modelo X'. O que isso indica?",
       alternativas: [
-        "Que o modelo X é o melhor do mercado",
-        "Risco de lock-in: a operação amarrada a um modelo específico terá de ser refeita a cada troca — vale perguntar se dá para trocar de modelo sem refazer tudo",
-        "Que a solução é mais segura",
-        "Que não há problema algum"
+        "Que o modelo X é o melhor do mercado hoje, e por isso a solução foi construída para extrair o máximo dele.",
+        "Risco de lock-in: amarrada a um modelo, a operação tem de ser refeita a cada troca; vale perguntar se dá para trocar sem refazer tudo.",
+        "Que a solução é mais segura, porque um modelo fixo e conhecido é mais fácil de auditar do que um sistema que troca de motor.",
+        "Que não há problema algum: se a solução foi desenhada para o modelo X, ela vai funcionar de forma estável enquanto esse modelo existir."
       ],
       correta: 1,
       feedback: "O modelo é peça trocável e se renova a cada trimestre. Amarrar a operação a um só é refazer tudo a cada lançamento. Sistema portátil (caso Shopify) troca o modelo por baixo sem quebrar a operação. Pergunte pela portabilidade."
@@ -242,10 +242,10 @@ const QUIZ = {
     {
       pergunta: "Em uma frase: o que separa uma demo de uma operação?",
       alternativas: [
-        "Um modelo de IA mais avançado",
-        "Uma interface mais bonita",
-        "Um contrato mais longo",
-        "A verificação: um processo que mede se a IA acertou e pega o erro antes do cliente — sem isso, é demonstração, não operação"
+        "Um modelo de IA mais avançado, com mais parâmetros e treino recente, capaz de dar respostas melhores que as versões anteriores.",
+        "Uma interface mais bonita e fácil de usar, que faz a equipe adotar a ferramenta e aproveitar melhor os recursos dela.",
+        "Um contrato mais longo com o fornecedor, que garante suporte e atualizações e dá segurança jurídica para escalar o uso na empresa.",
+        "A verificação: um processo que mede se a IA acertou e pega o erro antes do cliente; sem isso, é demonstração, não operação."
       ],
       correta: 3,
       feedback: "A resposta não é o modelo nem a demo: é a medição contínua e o tratamento de erro. (Saber se a IA funciona é uma coisa; saber se ela paga — o que custa e retorna — é o próximo módulo.)"

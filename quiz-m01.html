@@ -143,21 +143,21 @@ const QUIZ = {
     {
       pergunta: "Numa reunião, alguém resume: 'no fundo, IA hoje é tudo modelo de linguagem — o resto é variação do mesmo chatbot'. Qual correção é a mais precisa?",
       alternativas: [
-        "Está essencialmente certo: imagem e vídeo também saem de modelos de linguagem, só que treinados em pixels em vez de palavras",
-        "Vale para o uso pessoal, mas dentro das empresas quase todo o valor de IA vem mesmo de modelos de texto",
-        "Era verdade até 2022; antes disso a IA era só imagem e previsão, e o texto só veio depois",
-        "Boa parte dos modelos mais usados hoje é de imagem, vídeo e áudio — e há uma IA analítica/preditiva que não gera conteúdo algum e ainda assim entrega muito valor"
+        "Quase certo: imagem e vídeo saem do mesmo modelo de linguagem do texto, só que reaproveitado com pixels — é uma família técnica única",
+        "Vale para o uso pessoal do dia a dia, mas dentro das empresas quase todo o valor de IA vem mesmo de modelos de texto",
+        "Era verdade até 2022; antes disso a IA só fazia imagem e previsão, e a parte de conversar por texto só apareceu bem depois",
+        "Boa parte dos modelos mais usados hoje é de imagem, vídeo e áudio; e há a IA analítica, que só prevê e não gera conteúdo algum"
       ],
       correta: 3,
-      feedback: "O AI Index 2026 (Stanford HAI) mostra que muitos dos modelos mais usados são de imagem, vídeo, áudio e multimodais — não só texto. E há a divisão entre IA generativa (cria conteúdo) e IA analítica/preditiva (prevê fraude, demanda), que roda muito valor sem 'gerar' nada. Achar que 'IA = chatbot de texto' é o erro que faz entrar na conversa em desvantagem."
+      feedback: "O AI Index 2026 (Stanford HAI) mostra que muitos dos modelos mais usados são de imagem, vídeo, áudio e multimodais — não só texto. Geração de imagem e vídeo vem de famílias de modelos distintas, não do mesmo modelo de linguagem 'com pixels no lugar de palavras'. E há a divisão entre IA generativa (cria conteúdo) e IA analítica/preditiva (prevê fraude, demanda), que roda muito valor sem 'gerar' nada. Achar que 'IA = chatbot de texto' é o erro que faz entrar na conversa em desvantagem."
     },
     {
       pergunta: "Um fornecedor diz ter entregue um 'agente de IA' que 'lê cada chamado e sugere ao atendente uma resposta pronta para ele aprovar'. Pela distinção dos três degraus, o que isso é de fato?",
       alternativas: [
-        "Está no degrau da IA que raciocina e assiste — lê e sugere, mas quem decide e executa ainda é a pessoa; um agente de verdade fecharia o ciclo sozinho",
-        "Um agente pleno: ele já executa a tarefa de ponta a ponta, do chamado à resolução",
-        "É o primeiro degrau, a IA que conversa, já que no fim ele produz um texto de resposta",
-        "Não é IA de verdade: agente só conta se agir sem nenhum modelo de linguagem por baixo"
+        "Está no degrau que raciocina e assiste: interpreta o chamado e propõe a resposta, mas quem decide ainda é a pessoa",
+        "É um agente pleno: em vez de propor para o humano aprovar, ele mesmo executa a tarefa, do chamado à resolução",
+        "É o primeiro degrau, o de conversar, porque no fim o que ele entrega ao atendente é um texto de resposta pronto",
+        "Não é IA de verdade: para valer como agente, teria de agir sozinho, sem nenhum modelo de linguagem por baixo"
       ],
       correta: 0,
       feedback: "Os três degraus: conversar (escreve, resume), raciocinar (lê um contrato e aponta os riscos) e agentes (executa a tarefa inteira sozinho — abre o chamado, puxa dados, emite, avisa). 'Sugere para o humano aprovar' ainda é o degrau que assiste, não o que executa. 'Agente' virou palavra de marketing — saber o degrau real evita comprar promessa como se fosse operação."
@@ -165,10 +165,10 @@ const QUIZ = {
     {
       pergunta: "Tecnicamente, o que mudou por volta de 2022 para a IA 'sair do laboratório'? A leitura mais correta é:",
       alternativas: [
-        "Inventou-se naquele ano uma tecnologia inédita, que substituiu tudo o que havia antes",
-        "A IA só ficou mais barata — era a mesma capacidade de sempre, agora ao alcance de todos",
-        "Uma tecnologia que já existia desde ~2017 ganhou escala: com dados e potência suficientes, a máquina passou a conversar e criar, não só classificar e prever",
-        "Os sistemas passaram a guardar tudo o que o usuário digita, ganhando uma memória permanente que antes não tinham"
+        "Naquele ano inventou-se uma tecnologia inédita, do zero, que substituiu tudo o que existia de IA antes dela",
+        "A IA apenas ficou mais barata: era exatamente a mesma capacidade de sempre, agora só ao alcance de qualquer empresa ou pessoa",
+        "Uma tecnologia de ~2017 só ganhou escala em 2022: com dados e potência de sobra, a máquina passou de prever a conversar e criar",
+        "Os sistemas passaram a guardar tudo o que o usuário digita, ganhando uma memória permanente que antes não existia"
       ],
       correta: 2,
       feedback: "A base é de ~2017; o salto de 2022 foi de escala — dados e potência suficientes para a máquina conversar e criar, não só classificar/prever como os modelos de 10-15 anos atrás. Cuidado com a armadilha do 'só ficou mais barato': foi mudança de capacidade, não só de preço. E ela usa o que você escreve como contexto na hora — não vira memória permanente."
@@ -176,21 +176,21 @@ const QUIZ = {
     {
       pergunta: "Um cliente teme colar um contrato confidencial no chat: 'a IA vai aprender com isso e depois entregar para um concorrente?'. Sobre como o modelo usa o que você escreve, o módulo diz que:",
       alternativas: [
-        "Sim: tudo que se digita entra no treino permanente do modelo, então nada sensível deveria ser colado, nunca",
-        "Não há risco algum, porque esse tipo de modelo é analítico, e modelos analíticos não leem texto",
-        "Depende do tamanho: trechos curtos são esquecidos, mas documentos longos acabam entrando no treino",
-        "O modelo usa o texto como contexto na hora para responder, mas não treina nem guarda aquilo — terminado o pedido, aquele conteúdo se perde"
+        "Sim: cada texto colado é incorporado ao treino do modelo e vira parte permanente do que ele sabe, podendo reaparecer para outro usuário",
+        "Não, porque o que responde no chat é um modelo analítico, e modelo analítico só processa números, nunca texto livre como um contrato",
+        "Depende do tamanho: trechos curtos o modelo esquece, mas documentos longos acabam absorvidos e entram no treino do modelo",
+        "Ele usa o texto como contexto na hora de responder, mas não treina nem guarda aquilo; acabou o pedido, o conteúdo se perde"
       ],
       correta: 3,
-      feedback: "O mecanismo descrito no módulo: o modelo lê o que você escreve como contexto para responder naquele momento — não treina com aquilo nem o armazena; acabou o pedido, esqueceu. (A política de dados de cada fornecedor é outra conversa, contratual — mas o modelo em si não 'aprende e vaza'.) As outras opções confundem uso-em-contexto com treino permanente, ou inventam uma regra por tamanho de texto."
+      feedback: "O mecanismo descrito no módulo: o modelo lê o que você escreve como contexto para responder naquele momento — não treina com aquilo nem o armazena; acabou o pedido, esqueceu. (A política de dados de cada fornecedor é outra conversa, contratual — mas o modelo em si não 'aprende e vaza'.) As outras opções confundem uso-em-contexto com treino permanente, tratam o modelo do chat como analítico, ou inventam uma regra por tamanho de texto."
     },
     {
       pergunta: "O módulo cita um teste padronizado de programação em que, em um ano, a IA 'saiu de mediana ao nível de um engenheiro de referência'. A leitura correta é:",
       alternativas: [
-        "É o ritmo de evolução num teste específico — não o trabalho todo de um engenheiro; a lição é mirar na velocidade, não na foto de hoje",
-        "A IA já substitui, por inteiro, um engenheiro de software",
-        "A capacidade da IA se estabilizou: chegou ao teto e parou de crescer",
-        "O ganho vale só para programação; em nenhuma outra tarefa a IA avançou de um ano para o outro"
+        "É o ritmo num teste específico, não o trabalho inteiro de um engenheiro — o que pesa é só a velocidade dessa curva",
+        "Na prática, a IA já é capaz de substituir por inteiro um engenheiro de software, do começo ao fim do trabalho",
+        "A capacidade da IA se estabilizou nesse ponto: chegou perto do teto possível e basicamente parou de crescer",
+        "O ganho vale só para programação; em nenhuma outra tarefa a IA deu salto assim de um ano para o outro, foi caso isolado"
       ],
       correta: 0,
       feedback: "Dado do AI Index (Stanford). O ponto é o ritmo — num teste específico, não no trabalho inteiro de um engenheiro. Para quem decide, a lição é não avaliar IA pela foto de hoje, e sim pela velocidade da curva. Foi rápido porque entrou dinheiro em IA como nunca."
@@ -198,10 +198,10 @@ const QUIZ = {
     {
       pergunta: "McKinsey (State of AI 2025): 'mais de 6 em cada 10 empresas já experimentam agentes, mas menos de 10% os põem para rodar em escala'. O que esse par de números diz?",
       alternativas: [
-        "Que agentes já viraram padrão de mercado e quem não usa ficou para trás",
-        "Que a tecnologia falhou — se quase ninguém escala, é porque não funciona",
-        "Que há muita experimentação e pouquíssima operação real: a distância entre testar e pôr em produção é onde estão o desafio e a vantagem de quem a cruza",
-        "Que os 10% que escalam simplesmente gastaram mais em licenças que os demais"
+        "Que agentes já são o padrão do mercado hoje, e quem ainda não os adotou acabou ficando para trás na corrida",
+        "Que a tecnologia falhou na prática: se quase ninguém põe para rodar em escala, ela ainda não funciona de verdade",
+        "Que há muita experimentação e pouca operação real; a distância entre testar e produzir é onde mora a vantagem",
+        "Que os 10% que escalam apenas gastaram mais em licenças e ferramentas do que todas as demais empresas do setor"
       ],
       correta: 2,
       feedback: "Experimentar não é operar. Mais de 60% testam agentes, menos de 10% os têm em produção — a lacuna entre demo e produção é o tema central do curso, não um sinal de que 'não funciona' nem de que 'todo mundo já tem'. A vantagem competitiva mora exatamente em cruzar essa distância."
@@ -209,21 +209,21 @@ const QUIZ = {
     {
       pergunta: "Uma empresa oferece 'acesso a dezenas de modelos de vários fornecedores por uma porta só, para testar e comparar sem casar com nenhum'. Em que grupo do ecossistema ela está?",
       alternativas: [
-        "Labs — afinal, ela distribui muitos modelos de fundação",
-        "Agregadores / gateways — a 'porta única' para comparar modelos de fornecedores diferentes é exatamente esse papel",
-        "Nuvens / hyperscalers, que também dão acesso a vários modelos nas suas plataformas",
-        "Serviços e integração, já que ajuda o cliente a escolher o modelo"
+        "Labs de modelos: como ela junta num lugar só muitos modelos de fundação, seria o grupo dos fabricantes de modelos",
+        "Agregadores / gateways: reunir modelos de vários fabricantes num ponto de acesso só, para testar sem se prender a um, é o papel",
+        "Nuvens / hyperscalers: já que hospedam vários modelos na sua nuvem, seriam a 'porta única' para comparar fornecedores lado a lado",
+        "Serviços e integração, porque no fundo o que ela faz é aconselhar o cliente sobre qual modelo deve adotar"
       ],
       correta: 1,
-      feedback: "Os cinco grupos: labs (fabricam modelos), nuvens/hyperscalers (hospedam e bancam a infraestrutura), SaaS com IA embutida, agregadores/gateways (uma porta para muitos modelos, tipo o OpenRouter) e serviços/integração. 'Comparar vários fornecedores por uma porta só' é a marca do agregador. A opção das nuvens tenta confundir, mas o hyperscaler hospeda e distribui — não existe para comparar entre concorrentes."
+      feedback: "Os cinco grupos: labs (fabricam modelos), nuvens/hyperscalers (hospedam e bancam a infraestrutura), SaaS com IA embutida, agregadores/gateways (reúnem muitos modelos num só ponto de acesso, tipo o OpenRouter) e serviços/integração. Reunir vários fornecedores num acesso só, para comparar sem casar com nenhum, é a marca do agregador. A opção das nuvens tenta confundir, mas o hyperscaler hospeda e banca a infra do próprio ecossistema — não existe para comparar concorrentes lado a lado."
     },
     {
       pergunta: "McKinsey (2025): 88% das empresas já usam IA em alguma função, mas só ~6% são 'high performers'. Um sócio conclui: 'logo, os outros 82% escolheram os modelos errados'. A correção é:",
       alternativas: [
-        "Está certo: os high performers usam modelos superiores; os demais precisam trocar de fornecedor",
-        "O gargalo não é a escolha do modelo, e sim a abordagem — redesenhar o processo e medir resultado; usar a ferramenta é fácil, capturar valor é o raro",
-        "A direção está certa, mas o número de high performers é 88%, não 6%",
-        "Não dá para concluir nada: 'usar IA' e 'ser high performer' medem exatamente a mesma coisa"
+        "Está certo: os high performers usam modelos tecnicamente superiores, e os demais só precisam trocar de fornecedor para alcançá-los",
+        "O gargalo não é o modelo, é a abordagem: redesenhar processo e medir resultado; usar a ferramenta é fácil, capturar valor é raro",
+        "A direção faz sentido, mas erra no número: quem se destaca seria a maioria, perto dos 88%, e não a fração de ~6%",
+        "Não dá para concluir isso: no fundo, 'usar IA' e 'ser high performer' acabam medindo exatamente a mesma coisa"
       ],
       correta: 1,
       feedback: "88% usam, ~6% se destacam — o divisor não é o modelo, é a abordagem (redesenho de processo, dados, medição). Comprar ferramenta virou commodity; transformar em resultado que aparece no balanço continua raro. Trocar de fornecedor não move esse ponteiro."
@@ -231,21 +231,21 @@ const QUIZ = {
     {
       pergunta: "MIT (2025): iniciativas com parceiro externo chegam a operar de verdade cerca de duas vezes mais que as feitas só com equipe interna (67% vs 33%). A leitura mais cuidadosa é:",
       alternativas: [
-        "Contratar um parceiro garante o dobro de retorno financeiro — é causa e efeito direto",
-        "Equipe interna praticamente nunca consegue colocar IA em produção",
-        "Significa que 67% de todas as empresas do mundo já têm IA em produção",
-        "É uma vantagem real de operar com parceiro, mas parte vem de quem chama parceiro já chegar mais organizado; é sinal forte, não garantia mecânica"
+        "Operar com parceiro até ajuda, mas o dado real seria o oposto: quem faz internamente chega mais longe, 67% contra 33%",
+        "Na prática, equipe interna quase não coloca IA em produção sozinha; os 33% seriam casos raros, quase de sorte",
+        "Significa que 67% de todas as empresas do mundo, sem exceção, já têm alguma iniciativa de IA rodando em produção",
+        "É vantagem real operar com parceiro, mas parte vem de quem o contrata já chegar mais organizado; sinal forte, não garantia"
       ],
       correta: 3,
-      feedback: "O 67% vs 33% é sobre chegar a operar de verdade, não sobre retorno garantido, e a base são as iniciativas do estudo — não 'todas as empresas'. Cuidado com causa e efeito: quem contrata parceiro costuma já chegar mais organizado. É um sinal forte a favor de não fazer sozinho, mas lido com nuance."
+      feedback: "O 67% vs 33% é sobre chegar a operar de verdade, não sobre retorno garantido, e os 67% são de quem usa parceiro, não o contrário. A base são as iniciativas do estudo — não 'todas as empresas'. Cuidado com causa e efeito: quem contrata parceiro costuma já chegar mais organizado. É um sinal forte a favor de não fazer sozinho, mas lido com nuance."
     },
     {
       pergunta: "A Shopify (apresentada na AI Engineer World's Fair 2026) trocou um modelo caro e superdimensionado por um mais enxuto e cortou o custo daquela operação em mais de 500x, sem quebrá-la. A lição central é:",
       alternativas: [
-        "Quando o valor está no sistema em volta (processos, dados, verificação), o modelo vira peça trocável: dá para trocá-lo sem refazer a operação. É o que é 'ativo' contra o que é 'aluguel'",
-        "Existe um modelo 500x mais barato que os outros; a jogada é achá-lo e adotá-lo",
-        "O barato sempre vence — escolha, por regra, o modelo mais econômico disponível",
-        "Trocar de modelo quase sempre quebra a operação, então o certo é nunca mexer"
+        "Quando o valor está no sistema em volta (processos, dados, verificação), o modelo vira peça trocável — troca-se sem refazer a operação",
+        "Existe um modelo específico 500x mais barato que todos os demais; a jogada é localizá-lo e adotá-lo logo, sem mexer no resto",
+        "O modelo é a maior parte do custo em IA, então trocá-lo por um mais barato é, por si, a principal alavanca de economia",
+        "Trocar de modelo quase sempre acaba quebrando a operação, então o mais seguro é escolher um bom e nunca mais mexer nele"
       ],
       correta: 0,
       feedback: "A economia veio da estrutura em volta, não de um modelo mágico: com processos, dados e verificação bem montados, o modelo é peça trocável — trocou por um mais enxuto e a operação seguiu de pé. Essa é a fronteira entre o que é seu (ativo) e o que você só aluga junto com o modelo. Não é 'sempre o mais barato' nem 'nunca mexer'."

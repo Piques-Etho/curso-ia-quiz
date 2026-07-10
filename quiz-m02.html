@@ -143,10 +143,10 @@ const QUIZ = {
     {
       pergunta: "O que melhor descreve uma 'alucinação' de IA?",
       alternativas: [
-        "Um travamento do sistema, quando a IA fica sem resposta e retorna erro",
-        "Uma resposta plausível e bem escrita, porém falsa, que o modelo entrega com total confiança",
-        "Um viés político embutido de propósito pelos criadores do modelo",
-        "Um ataque de hacker que corrompe as respostas da IA"
+        "Um travamento do sistema: sobrecarregado, o modelo trava e devolve uma mensagem de erro em vez de responder",
+        "Uma resposta que soa correta e bem escrita, mas é falsa, entregue com total confiança",
+        "Um viés político inserido de propósito pelos criadores para moldar as respostas do modelo",
+        "Um ataque externo que invade o sistema e corrompe as respostas que a IA devolve ao usuário"
       ],
       correta: 1,
       feedback: "Alucinação é o modelo produzir algo que soa certo e é falso — sem nenhum aviso de que não sabe. O perigo não é o erro óbvio; é o erro convincente. Confiança na resposta não é sinal de que ela está correta."
@@ -154,21 +154,21 @@ const QUIZ = {
     {
       pergunta: "Segundo a própria OpenAI, por que os modelos tendem a 'chutar' em vez de dizer 'não sei'?",
       alternativas: [
-        "Porque foram programados para nunca admitir limites, por decisão comercial",
-        "Porque não têm acesso à internet na hora de responder",
-        "Porque o treino e as avaliações premiam acertar — um palpite às vezes acerta, enquanto 'não sei' pontua zero",
-        "Porque os usuários preferem respostas erradas a respostas honestas"
+        "Porque foram programados por decisão comercial para não admitir limites, protegendo a imagem do produto",
+        "Porque, sem internet para consultar na hora, o modelo recorre a um palpite para não deixar a resposta em branco",
+        "Porque treino e avaliação premiam acertar: um palpite às vezes acerta, e responder 'não sei' pontua zero",
+        "Porque os usuários preferem uma resposta errada e confiante a ouvir uma admissão honesta de dúvida"
       ],
       correta: 2,
-      feedback: "É como uma prova de múltipla escolha: chutar pode acertar, deixar em branco é zero garantido. Modelos avaliados só por acerto aprendem a arriscar um palpite confiante em vez de reconhecer incerteza — por isso a alucinação é previsível, não um defeito misterioso."
+      feedback: "É como uma prova de múltipla escolha: chutar pode acertar, deixar em branco é zero garantido. O que puxa o palpite não é a falta de internet — é o incentivo do treino: modelos avaliados só por acerto aprendem a arriscar uma resposta confiante em vez de reconhecer incerteza. Por isso a alucinação é previsível, não um defeito misterioso."
     },
     {
       pergunta: "Uma IA genérica, ao responder uma pergunta sobre a SUA empresa, se baseia em quê?",
       alternativas: [
-        "Ela consulta automaticamente os sistemas internos da sua empresa",
-        "Numa memória permanente que ela guarda de todas as conversas anteriores",
-        "Numa base de dados atualizada em tempo real sobre todas as empresas",
-        "No que aprendeu no treino geral, mais o que você colocar na frente dela na hora da pergunta — e nada mais"
+        "Ela acessa e consulta sozinha os sistemas internos e os bancos de dados da sua empresa em tempo real",
+        "Numa memória permanente em que guarda tudo o que já foi conversado com ela, por qualquer usuário, ao longo do tempo",
+        "Numa base de dados sobre todas as empresas, atualizada em tempo real pelo fornecedor do modelo",
+        "No conhecimento geral do treino mais o que você põe à frente dela na hora — e nada além disso"
       ],
       correta: 3,
       feedback: "O modelo responde com dois insumos: o conhecimento geral do treino e o contexto que você entrega naquele momento. Do seu negócio ele não sabe nada, a menos que você mostre. Quem decide o que a IA vê é a empresa — não o modelo."
@@ -176,43 +176,43 @@ const QUIZ = {
     {
       pergunta: "Prompting, RAG e fine-tuning são melhor entendidos como:",
       alternativas: [
-        "Três níveis de qualidade: fine-tuning é sempre o melhor, prompting o mais fraco",
-        "Três marcas concorrentes de IA no mercado",
-        "Três respostas para problemas diferentes, ordenadas por custo — comece pela mais barata e só suba se precisar",
-        "Três etapas obrigatórias que todo projeto de IA segue nessa ordem"
+        "Três níveis de qualidade: o retreino é o melhor e a simples instrução, o degrau mais fraco",
+        "Três formas de fazer a mesma coisa — alimentar a IA com dados — que mudam só no preço",
+        "Três respostas a problemas diferentes, ordenadas por custo: comece pela opção mais barata",
+        "Três etapas de um mesmo projeto: instruir, depois RAG e, por fim, o fine-tuning que o conclui"
       ],
       correta: 2,
-      feedback: "Não são degraus de sofisticação nem etapas obrigatórias: cada um resolve um problema distinto. Instrução (prompting) custa quase nada; dar o dado na hora (RAG) é um projeto; retreinar (fine-tuning) é caro e raramente necessário. A disciplina é começar barato."
+      feedback: "Não são degraus de qualidade nem etapas de um mesmo projeto: cada um resolve um problema diferente. Instrução (prompting) custa quase nada; dar o dado na hora (RAG) é um projeto; retreinar (fine-tuning) é caro e raramente necessário. A disciplina é começar barato, pelo problema certo."
     },
     {
-      pergunta: "Segundo a documentação da AWS, o que o fine-tuning (retreino) de fato ensina a um modelo?",
+      pergunta: "Segundo a documentação da AWS, para que o fine-tuning (retreino) de um modelo de fato serve?",
       alternativas: [
-        "Comportamento — um padrão de resposta, formato e estilo — e NÃO conhecimento factual novo",
-        "Fatos novos: é a forma de colocar o conhecimento da sua empresa dentro da IA",
-        "A navegar na internet para buscar informação atualizada",
-        "A nunca mais cometer erros ou alucinações"
+        "Para ajustar o comportamento: formato, tom e estilo da resposta, não os dados que mudam com o tempo",
+        "Para carregar os dados que mudam: cada novo preço ou item de estoque entraria por um retreino",
+        "Para dar ao modelo acesso à internet, de modo que ele busque a informação atualizada a cada pergunta",
+        "Para eliminar o erro de vez: uma vez retreinado, o modelo deixaria de alucinar e não erraria mais"
       ],
       correta: 0,
-      feedback: "A AWS é explícita: fine-tuning ensina o modelo a COMO responder, não O QUE saber. Para injetar fatos da empresa, o caminho é RAG (dar o dado na hora), não retreinar. Confundir os dois é o erro mais caro do mercado."
+      feedback: "Segundo a AWS, o fine-tuning ajusta COMO o modelo responde — formato, tom, estilo —, não é o caminho eficiente para manter a IA a par de dados que mudam. Para carregar os fatos do negócio, dá-se o dado na hora (RAG). Confundir as duas coisas é o erro mais caro do mercado."
     },
     {
       pergunta: "O cliente diz: 'A IA vive errando os dados do nosso catálogo de produtos. Vamos fazer um fine-tuning nela.' Qual a melhor resposta?",
       alternativas: [
-        "Concordar: fine-tuning é a forma correta de ensinar o catálogo à IA",
-        "Sugerir trocar por um modelo de IA maior e mais caro",
-        "Explicar que catálogos não podem ser usados com IA, por segurança",
-        "É um problema de fato — a IA não conhece o catálogo. O caminho é dar esse dado na hora (RAG), não retreinar; retreino ensina comportamento, não fatos"
+        "Concordar e tocar o fine-tuning: retreinar é realmente a forma correta de ensinar o catálogo à IA",
+        "Sugerir a troca por um modelo maior e mais caro, que erraria menos os dados do catálogo",
+        "Explicar que catálogos não podem ser ligados a uma IA, por segurança dos dados",
+        "É falta de fato, não de comportamento: dê o catálogo na hora (RAG), não retreine o modelo"
       ],
       correta: 3,
-      feedback: "Errar o catálogo é falta de fato, não de comportamento — e a própria AWS diz que fine-tuning não ensina fatos. A solução certa é RAG: pôr o catálogo atualizado na frente do modelo na hora da resposta. Fine-tuning aqui é o cheque mais caro para o problema errado."
+      feedback: "Errar o catálogo é falta de fato, não de comportamento — e a própria AWS diz que fine-tuning não é a via para carregar fatos. A solução certa é RAG: pôr o catálogo atualizado na frente do modelo na hora da resposta. Fine-tuning aqui é o cheque mais caro para o problema errado."
     },
     {
       pergunta: "O chatbot de um cliente prometeu a um consumidor uma condição que não existe na política da empresa. Como evitar isso?",
       alternativas: [
-        "Não há o que fazer: se a IA disse, a responsabilidade é do fornecedor do modelo, não da empresa",
-        "Prender o chatbot à política real da empresa (dar o dado certo na hora) e revisar o que ele pode prometer — porque, perante o cliente, 'a IA disse' não isenta a empresa",
-        "Desligar o chatbot: nenhuma IA pode falar com clientes com segurança",
-        "Trocar o modelo por um da moda, que não comete esse erro"
+        "Nada a fazer: se foi a IA que prometeu, a responsabilidade é do fornecedor do modelo, não da empresa",
+        "Prender o chatbot à política real e revisar o que ele pode prometer: 'a IA disse' não isenta a empresa",
+        "Desligar o chatbot de vez: nenhuma IA consegue falar com clientes finais com segurança suficiente",
+        "Trocar por um modelo mais novo e badalado do mercado, que já viria ajustado de fábrica para não cometer esse erro"
       ],
       correta: 1,
       feedback: "Num caso real, um tribunal responsabilizou a empresa pelo que o chatbot prometeu — 'a IA disse' não transferiu a culpa. A leitura mais provável é que o bot respondeu sem a política de verdade à frente e completou com algo plausível. O controle é grounding (dar o dado certo) mais revisão do que ele pode prometer."
@@ -220,21 +220,21 @@ const QUIZ = {
     {
       pergunta: "O cliente conclui: 'Nossa IA não conhece nosso negócio, então vamos treinar um modelo próprio do zero.' Qual a resposta mais precisa?",
       alternativas: [
-        "Correto: treinar um modelo próprio é a única forma de a IA conhecer o negócio",
-        "Correto, desde que a empresa contrate cientistas de dados para treinar do zero",
-        "Na maioria dos casos, o que falta é o dado na hora (RAG), não um modelo próprio — retreinar ensina comportamento, não os fatos da empresa, e é o caminho mais caro",
-        "O problema não tem solução: IA nunca conhece bem um negócio específico"
+        "Correto: treinar um modelo próprio do zero é o que finalmente faria a IA conhecer o negócio por dentro",
+        "Correto, desde que a empresa contrate cientistas de dados dedicados a treinar esse modelo próprio do zero",
+        "Falta dar o dado do negócio na hora (RAG), não um modelo do zero: é assim que a IA usa seu conhecimento",
+        "O problema não tem solução simples: dificilmente uma IA chega a dominar um negócio tão específico como o nosso"
       ],
       correta: 2,
-      feedback: "'Não conhece meu negócio' é um problema de fato, e fatos entram por RAG, não por retreino. Treinar um modelo próprio é caro, lento e — segundo a AWS — nem ensina fatos, ensina comportamento. A disciplina: esgotar instrução e dado na hora antes de sequer cogitar retreinar."
+      feedback: "'Não conhece meu negócio' se resolve dando o dado do negócio na hora da resposta (RAG) — não construindo um modelo do zero, que é caro, lento e, segundo a AWS, sequer é a via para carregar fatos. A disciplina: esgotar instrução e dado na hora antes de cogitar um modelo próprio."
     },
     {
       pergunta: "Uma equipe usou IA para redigir um relatório ao cliente e as fontes citadas eram inventadas (como no caso Deloitte). Que controle teria evitado o prejuízo?",
       alternativas: [
-        "Uma etapa simples de verificação das fontes antes da entrega — checar se cada referência existe de fato",
-        "Um modelo de IA mais avançado, que não erraria",
-        "Proibir o uso de IA em qualquer entregável",
-        "Confiar na IA, já que ela afirmou que as fontes eram reais"
+        "Uma etapa simples de verificação antes de entregar: checar se cada fonte citada existe de fato",
+        "Um modelo de IA mais avançado e caro, capaz de redigir o relatório sem inventar fonte alguma",
+        "Proibir o uso de qualquer ferramenta de IA na produção de qualquer entregável enviado ao cliente",
+        "Confiar na IA, já que ela mesma afirmou que todas as fontes citadas eram reais e verificáveis"
       ],
       correta: 0,
       feedback: "O erro era previsível — a IA completa com o que soa plausível. O que teria evitado o prejuízo era barato: verificar as fontes antes de assinar. O cliente não paga pela IA; paga pela sua assinatura embaixo do que a IA produziu. Pedir à própria IA que se autoconfira não resolve."
@@ -242,10 +242,10 @@ const QUIZ = {
     {
       pergunta: "O cliente pergunta: 'Como eu confio no que a IA me entrega?' A melhor resposta de quem fala com autoridade é:",
       alternativas: [
-        "'Confie na marca do modelo — os grandes fornecedores não erram'",
-        "'Quando a IA responde com confiança, pode confiar: confiança é sinal de acerto'",
-        "'Não dá para confiar em IA para nada importante; use só para rascunhos'",
-        "'Você não confia no palpite; monta um processo de verificação — como saber que a IA acertou antes de o seu cliente descobrir que ela errou'"
+        "'Confie na marca do modelo: os grandes fornecedores praticamente não erram nas respostas'",
+        "'Quando a IA responde com firmeza e sem hesitar, pode confiar: essa confiança é um bom sinal de acerto'",
+        "'Não dá para confiar em IA para nada que importe; use apenas para rascunhos internos'",
+        "'Você não confia no palpite: monta um processo para saber que a IA acertou antes do cliente'"
       ],
       correta: 3,
       feedback: "Confiança da IA não é garantia de acerto. A resposta madura não é fé nem descrédito: é verificação embutida — medir a qualidade da saída antes que o erro chegue ao cliente. Separar demonstração de operação é o tema de um módulo à frente."
