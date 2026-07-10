@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 5",
+  titulo: "Economia da IA no negócio",
+  questoes: [
+    {
+      pergunta: "O AI Index (Stanford) mostra que rodar um modelo do nível do ChatGPT de 2022 caiu de US$ 20 para US$ 0,07 por milhão de tokens. A leitura correta é:",
+      alternativas: [
+        "A IA ficou cerca de 280 vezes mais capaz no período, resolvendo tarefas que antes não conseguia",
+        "O custo caiu porque os modelos novos são menores e, por isso, entregam menos qualidade",
+        "É o custo de TREINAR um novo modelo que caiu 280x, não o de usá-lo no dia a dia",
+        "A mesma capacidade ficou ~280x mais barata: é queda de custo, não salto de qualidade"
+      ],
+      correta: 3,
+      feedback: "O número do AI Index é sobre INFERÊNCIA — o custo de rodar o modelo para um nível fixo de desempenho —, que caiu de US$ 20 para US$ 0,07 por milhão de tokens (mais de 280x em ~1,5 ano). Não é a IA ficando 280x melhor; é a mesma capacidade ficando barata. Confundir barateamento com salto de qualidade leva a decisão errada."
+    },
+    {
+      pergunta: "Pela lógica de FinOps de IA, qual é a forma certa de medir o custo de uma operação com IA?",
+      alternativas: [
+        "Pelo preço por token: é o número que o fornecedor cobra, então é o que importa na conta",
+        "Pelo total gasto no mês, sem separar tarefa por tarefa — o que sai do caixa é o custo",
+        "Pelo custo por resposta CERTA, descontando as que precisam ser refeitas ou descartadas",
+        "Pelo número de usuários com licença ativa, que é o que determina o gasto de verdade"
+      ],
+      correta: 2,
+      feedback: "FinOps de IA insiste: a unidade certa é o custo por output BEM-FEITO, não por token. Resposta barata em que você não confia é cara disfarçada — alguém revisa, descarta e refaz. Token e licença medem gasto, não valor; o que importa é quanto custa cada resultado que serve."
+    },
+    {
+      pergunta: "Se o custo por tarefa de IA despencou, por que a conta total de muitas empresas SOBE?",
+      alternativas: [
+        "Porque os fornecedores elevaram os preços de tabela para compensar a queda do custo unitário",
+        "Porque, com o preço baixo, passa-se a usar IA em muito mais tarefas — o volume cresce",
+        "Porque o custo só cai para grandes empresas; as médias pagam tarifas bem mais altas",
+        "Porque a conta que sobe é a de treinar modelos próprios, não a de usar os de mercado"
+      ],
+      correta: 1,
+      feedback: "O preço de cada tarefa caiu, mas ficou barato e todo mundo passou a usar IA para mil coisas — o volume explode e a conta total sobe do mesmo jeito. O unitário despenca e o total cresce; por isso a pergunta certa não é 'quanto custa', é 'onde isso vira receita ou corta custo'."
+    },
+    {
+      pergunta: "Qual régua diz se um projeto de IA merece virar investimento, e não só experimento?",
+      alternativas: [
+        "Se ele aponta para cortar custo, gerar receita ou destravar algo antes impossível",
+        "Se ele usa o modelo mais avançado disponível, sinal de que a empresa está na frente",
+        "Se a equipe interna consegue construí-lo sozinha, sem depender de fornecedor externo",
+        "Se o custo por token do fornecedor escolhido for o mais baixo entre os concorrentes"
+      ],
+      correta: 0,
+      feedback: "Todo projeto de IA precisa fechar em uma de três alavancas: cortar custo, gerar receita ou destravar o impossível. Se não aponta pra nenhuma, é experimento — e deve ser precificado como tal: barato, com prazo e com hora de desligar. Modelo avançado ou token barato não são, sozinhos, um business case."
+    },
+    {
+      pergunta: "Por que 'prontidão de dados' aparece como linha do orçamento num projeto de IA?",
+      alternativas: [
+        "Porque a lei brasileira exige um item de dados no orçamento de todo projeto de IA",
+        "Porque o maior custo de um projeto de IA costuma ser comprar os dados que faltam no mercado",
+        "Porque os modelos só funcionam com dados num formato único e proprietário do fornecedor",
+        "Porque sem dado organizado o projeto trava, e arrumar isso costuma custar mais que a IA"
+      ],
+      correta: 3,
+      feedback: "IA sem dado organizado é carro sem estrada: se o dado está espalhado, sujo e trancado em vários sistemas, o business case desaba — e a maior fatia do custo vai ser arrumar isso, não a IA. Por isso prontidão de dados é linha do orçamento, não detalhe técnico."
+    },
+    {
+      pergunta: "Um sócio de uma firma que fatura por hora comemora: 'a IA fez o time render o triplo!'. O alerta que falta é:",
+      alternativas: [
+        "Que a IA ainda não rende o triplo em tarefas de serviço; o ganho real costuma ser bem menor",
+        "Que, rendendo o triplo, você corta as horas que VENDE — sem mudar o preço, a receita cai",
+        "Que o ganho de produtividade só aparece depois de meses treinando o time na ferramenta",
+        "Que render mais rápido aumenta o risco de erro, e o cliente vai acabar reclamando mais"
+      ],
+      correta: 1,
+      feedback: "Se o seu preço é 'hora trabalhada' e a IA corta horas, a eficiência vira buraco no caixa — você entrega mais rápido e fatura menos. A Thomson Reuters estima ~240 horas por ano liberadas por profissional no jurídico. O ganho só vira lucro se o preço deixar de ser hora e passar a ser resultado."
+    },
+    {
+      pergunta: "Um fornecedor propõe cobrar US$ 0,99 por chamado RESOLVIDO, em vez de uma licença mensal fixa. O que muda de mais importante?",
+      alternativas: [
+        "O fornecedor passa a ganhar só quando entrega o resultado, e não quando você apenas usa",
+        "Na prática vira uma licença com outro nome; o incentivo do fornecedor continua o mesmo",
+        "Você deixa de ter qualquer controle sobre o gasto, que passa a ser imprevisível no mês",
+        "O modelo garante ficar mais barato que a licença, porque você só paga pelo que usa"
+      ],
+      correta: 0,
+      feedback: "No preço por outcome, o fornecedor só é pago quando o problema é resolvido — o incentivo dele passa a ser entregar, não te manter preso a uma licença. Exemplos de mercado: Intercom cobra por chamado resolvido; a Sierra só cobra quando o agente resolve. Não é garantia de ficar mais barato; é alinhar quem paga com quem entrega."
+    },
+    {
+      pergunta: "O sócio quer construir a própria IA em casa 'para não depender de ninguém'. Quando isso faz sentido?",
+      alternativas: [
+        "Sempre que possível: construir em casa costuma sair mais barato e evita ficar refém de fornecedor",
+        "Quando a empresa é grande o bastante para bancar um time só de IA, use-o muito ou pouco",
+        "Quando o preço dos fornecedores está alto e construir em casa promete sair mais em conta",
+        "Quando aquilo é o seu diferencial competitivo E você tem os dados organizados para sustentar"
+      ],
+      correta: 3,
+      feedback: "Construir em casa faz sentido num caso: quando o que você vai construir é o seu diferencial competitivo e você tem prontidão de dados. Fora disso, é armadilha — custo, demora e um projeto que não escala. Não é 'sempre mais barato' (76% das empresas compram em vez de construir): constrói-se só o que só você pode fazer; o resto, aluga."
+    },
+    {
+      pergunta: "O dado do MIT mostra que iniciativas com parceiro externo operam de verdade ~2x mais que as feitas só com time interno (67% vs 33%). A leitura cuidadosa é:",
+      alternativas: [
+        "Contratar um parceiro dobra o retorno financeiro do projeto — é causa e efeito direto",
+        "Time interno praticamente nunca consegue colocar IA para operar de verdade em escala",
+        "É sinal forte a favor de parceiro, mas em parte porque quem o chama já chega organizado",
+        "Significa que 67% de todas as empresas do mundo já operam IA com um parceiro externo hoje em dia"
+      ],
+      correta: 2,
+      feedback: "O 67% contra 33% é sobre CHEGAR A OPERAR, não sobre retorno garantido, e a base são as iniciativas do estudo — não todas as empresas. Cuidado com causa e efeito: quem contrata parceiro costuma já chegar mais organizado. É um sinal forte contra fazer sozinho, mas lido com nuance."
+    },
+    {
+      pergunta: "No Brasil, só ~15% das empresas apontam ROI positivo com IA (Peers/MIT Review). Um sócio conclui: 'então a IA não funciona aqui'. A correção é:",
+      alternativas: [
+        "Ele tem razão: o dado prova que a tecnologia ainda não está madura para o mercado brasileiro",
+        "O gargalo não é a tecnologia, é a abordagem — a maioria gasta sem redesenhar processo e medir",
+        "O número está errado: a maioria das empresas brasileiras já tem retorno claro e bem medido com IA",
+        "ROI positivo só aparece depois de trocar todos os sistemas legados da empresa por novos"
+      ],
+      correta: 1,
+      feedback: "Só ~15% com ROI positivo no Brasil (e ~5% com valor substancial lá fora, pela BCG) não diz que a IA não funciona — diz que a maioria gasta sem mudar a abordagem: sem redesenhar processo, sem medir, sem prontidão de dados. Quem entende de custo e de build-versus-buy joga do lado dos 15%, não dos 85%."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
