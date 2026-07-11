@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 8",
+  titulo: "Usar a IA com autoridade",
+  questoes: [
+    {
+      pergunta: "Numa roda, perguntam: 'afinal, qual é a melhor IA?'. A resposta que demonstra autoridade é:",
+      alternativas: [
+        "Não existe 'a melhor': os de topo estão colados; escolha por tarefa, preço e dado",
+        "É o GPT, o mais conhecido — e a fama costuma apontar a melhor opção geral do mercado",
+        "É o mais caro do mercado: no fim das contas, o preço acompanha de perto a qualidade",
+        "É o lançamento mais recente, que costuma superar os anteriores na maioria das tarefas"
+      ],
+      correta: 0,
+      feedback: "Os modelos de topo estão a poucos pontos um do outro — não há 'a melhor'. Existe a melhor PRA TAREFA: escolhe-se por qual é o trabalho, quanto custa e onde o seu dado pode ir. Nem o mais famoso, nem o mais caro, nem o mais novo por si só."
+    },
+    {
+      pergunta: "Qual é a linha que separa onde a IA é confiável de onde ela te trai?",
+      alternativas: [
+        "É confiável de manhã e vai piorando ao longo do dia, conforme muita gente usa ao mesmo tempo",
+        "É confiável nas ferramentas pagas e falha nas gratuitas, que no fim das contas entregam menos",
+        "É confiável no texto e fraca no número; então, havendo número no meio, o melhor é não usar IA",
+        "É confiável pra transformar o que você dá, e traiçoeira pra inventar o que você não deu"
+      ],
+      correta: 3,
+      feedback: "A linha é essa: dê um texto pra resumir, reescrever, traduzir, estruturar — ela transforma bem o que já está na mão. Peça um fato, número ou citação que ela não tem — e ela inventa com confiança. Confiável no que você entrega; traiçoeira no que você não deu."
+    },
+    {
+      pergunta: "Em que tipo de resposta a IA mais inventa (alucina)?",
+      alternativas: [
+        "No resumo de um texto mais longo que você mesmo forneceu para ela resumir",
+        "Em citações e fontes — o campeão (Stanford: 58% a 88% em consulta jurídica)",
+        "Na tradução de frases simples do dia a dia, de um idioma para o outro",
+        "Ao reescrever um e-mail seu, deixando o tom mais formal ou o texto mais curto"
+      ],
+      correta: 1,
+      feedback: "Citação e fonte é o campeão de invenção: a Stanford mediu de 58% a 88% de alucinação em consultas jurídicas. Teve advogado punido por citar processos que a IA inventou (Mata v. Avianca). Resumir, traduzir e reescrever o que você deu é seguro; inventar fonte, não."
+    },
+    {
+      pergunta: "Qual é o jeito mais eficaz de reduzir a invenção da IA numa resposta?",
+      alternativas: [
+        "Dar a fonte e pedir pra ela se basear nela (grounding): a invenção cai a menos de 2%",
+        "Repetir a mesma pergunta várias vezes, até ela devolver sempre a mesma resposta de volta",
+        "Usar o modelo mais caro, que é o único que, garantidamente, nunca inventa nada de errado",
+        "Pedir com educação para a IA prometer que, dessa vez, não vai inventar nada na resposta"
+      ],
+      correta: 0,
+      feedback: "É o truque que separa amador de quem usa com autoridade: em vez de perguntar 'de memória', cole o material e peça pra ela se basear nele. Ancorada numa fonte que você deu, a alucinação despenca — de faixa alta para menos de 2%. Repetir ou 'pedir pra prometer' não muda nada."
+    },
+    {
+      pergunta: "Qual analogia melhor descreve como tratar a IA no trabalho?",
+      alternativas: [
+        "Um oráculo: o que ela diz é a verdade final e definitiva, não precisa conferir depois",
+        "Uma calculadora: se você digitou certo, o resultado sempre vai sair certo do outro lado",
+        "Um estagiário brilhante e apressado: ótimo rascunho, conferido antes de assinar",
+        "Um arquivo morto: só serve pra guardar informação parada, não pra de fato produzir algo"
+      ],
+      correta: 2,
+      feedback: "Estagiário brilhante e apressado: entrega um rascunho excelente numa velocidade absurda — e você confere antes de assinar. Não é oráculo (não é verdade final) nem calculadora (não é sempre exata); e produz muito, não é arquivo morto. A revisão humana é sua, sempre."
+    },
+    {
+      pergunta: "Um cliente te pergunta 'qual IA você usa?'. A resposta que demonstra autoridade é:",
+      alternativas: [
+        "'Uso a marca X, que hoje é a melhor do mercado disparado, pra qualquer coisa que apareça'",
+        "'Depende da tarefa: uma pra texto longo, outra pra código, outra pra dado sensível'",
+        "'Uso todas ao mesmo tempo, o tempo todo, pra garantir sempre o melhor resultado possível'",
+        "'Não uso IA no trabalho; na real, ainda não confio o bastante pra coisa séria'"
+      ],
+      correta: 1,
+      feedback: "Autoridade é mostrar o critério, não uma marca: a escolha é por tarefa, preço e onde o dado pode ir. 'A melhor disparado' ignora que os modelos estão colados; 'todas o tempo todo' é desperdício; 'não uso nenhuma' joga fora a ferramenta."
+    },
+    {
+      pergunta: "Você precisa usar IA num documento sigiloso que não pode sair da empresa. A melhor escolha é:",
+      alternativas: [
+        "Colar no chat público mais popular; é rápido e prático pra resolver logo o dia a dia",
+        "Qualquer ferramenta serve, contanto que você se lembre de apagar a conversa logo depois",
+        "Esperar a lei de IA ser sancionada para só então usar IA com esse tipo de documento",
+        "Um modelo aberto rodando dentro da empresa, pra o dado não sair da rede de vocês"
+      ],
+      correta: 3,
+      feedback: "Para dado sensível, a jogada é um modelo aberto (DeepSeek, Qwen, Llama...) rodando dentro de casa: o dado não sai da sua rede. Colar num chat público expõe; 'apagar depois' não desfaz o que já saiu; e não é preciso esperar lei nenhuma pra proteger o dado hoje."
+    },
+    {
+      pergunta: "Você vai escrever um artigo usando IA. A forma certa de usar é:",
+      alternativas: [
+        "Publicar direto o que a IA escreveu: se o texto saiu fluido, então ele já está correto",
+        "Não usar IA pra isso de jeito nenhum — texto de verdade só se escreve à mão, do zero",
+        "Usar o rascunho e a estrutura da IA, mas conferir cada dado, número e citação do texto",
+        "Pedir pra IA jurar que já checou todos os fatos, e então confiar na palavra dela"
+      ],
+      correta: 2,
+      feedback: "A IA é ótima pro rascunho, a estrutura e o texto fluido — mas cada dado, número e citação, você confere. O texto é dela; a veracidade é sua responsabilidade. Publicar direto é arriscado (texto fluido não é texto verdadeiro), e 'ela jurou que checou' não vale nada."
+    },
+    {
+      pergunta: "Você quer que a IA te ajude a entender um contrato específico. O jeito que dá o resultado mais confiável é:",
+      alternativas: [
+        "Perguntar de memória 'o que costuma ter num contrato desse tipo?' e usar a resposta dela",
+        "Colar o contrato e pedir pra ela responder com base nele, não no que ela acha que sabe",
+        "Pedir pra ela buscar contratos parecidos na internet e copiar de lá as cláusulas prontas",
+        "Perguntar a vários modelos diferentes e ficar com a resposta que aparecer mais vezes"
+      ],
+      correta: 1,
+      feedback: "Dê a fonte: cole o contrato e peça pra ela se basear nele. Aí ela para de generalizar 'de memória' (onde inventa) e passa a ler o SEU documento. Perguntar no genérico ou 'votar' entre modelos não te dá a resposta do seu contrato — te dá um chute médio."
+    },
+    {
+      pergunta: "Duas pessoas usam a mesma IA: uma tira ouro, a outra recebe 'lixo bem escrito'. A diferença costuma ser:",
+      alternativas: [
+        "A que tira ouro paga pela versão mais cara; a outra usa a versão gratuita da ferramenta",
+        "A que tira ouro usa de manhã cedo, quando a IA ainda está mais 'descansada' pra responder",
+        "A que tira ouro tem acesso a um modelo secreto a que o público em geral não consegue chegar",
+        "A que tira ouro dá contexto e formato e itera; a outra só manda 'faz aí' e aceita o primeiro"
+      ],
+      correta: 3,
+      feedback: "A diferença é o modo de usar, não a versão: dar contexto rico, dizer o formato, mandar a IA perguntar o que falta, e iterar (a primeira resposta é rascunho). Quem delega bem tira ouro; quem manda 'faz aí' recebe lixo bem escrito. Não é preço, nem horário, nem modelo secreto."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
