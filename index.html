@@ -189,8 +189,8 @@ const BLOCOS = [
        desc:"O mapa das ferramentas de hoje, o que a IA faz bem e onde inventa, e como usar com critério.",
        audio:"08", quiz:"quiz-m08.html"},
       {n:9, titulo:"Síntese: conversando com autoridade",
-       desc:"Um quiz de cenários e a simulação final para fechar a trilha com autoridade.",
-       breve:true},
+       desc:"Um quiz de cenários que cruza os oito módulos — o fechamento da trilha.",
+       soQuiz:true, quiz:"quiz-m09.html"},
     ]
   }
 ];
@@ -256,6 +256,8 @@ function linhaModulo(m){
   let acoes = "";
   if (m.breve){
     acoes = '<div class="acoes"><span class="tag-embreve">Em breve</span></div>';
+  } else if (m.soQuiz){
+    acoes = '<div class="acoes"><a class="acao cheia" href="'+m.quiz+'">✎ Fazer o quiz de cenários</a></div>';
   } else {
     acoes =
       '<div class="acoes">'+

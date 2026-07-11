@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 9",
+  titulo: "Síntese: conversando com autoridade",
+  questoes: [
+    {
+      pergunta: "Cliente, na mesa: 'no fundo, IA hoje é tudo a mesma coisa — é tudo ChatGPT'. A correção com autoridade é:",
+      alternativas: [
+        "Ele tem razão: no fim das contas, todo modelo de IA é um chatbot de texto disfarçado",
+        "Há famílias e camadas diferentes, e há IA que só analisa e prevê, sem gerar nada",
+        "O que muda de uma pra outra é só o preço; a capacidade delas é toda praticamente igual",
+        "O que importa é só quem chegou primeiro; o resto do mercado é cópia do mesmo chatbot"
+      ],
+      correta: 1,
+      feedback: "IA não é um chatbot só: há labs, nuvens, gateways e modelos abertos, e há a divisão entre IA generativa (cria) e analítica/preditiva (prevê fraude, demanda) — que entrega muito valor sem 'gerar' nada. Achar que 'IA = chat de texto' entra na conversa em desvantagem."
+    },
+    {
+      pergunta: "Um cliente teme colar um contrato no chat: 'a IA vai aprender com isso e vazar pro concorrente'. A resposta certa é:",
+      alternativas: [
+        "Sim: tudo que se digita entra no treino permanente, então nunca cole nada sensível ali dentro",
+        "Não há risco algum, porque nenhum modelo de IA guarda ou usa o que você escreve nele",
+        "Depende do tamanho: os trechos curtos somem, mas os documentos longos entram no treino",
+        "Ela usa como contexto na hora, não treina nem guarda; e o sigiloso vai num modelo em casa"
+      ],
+      correta: 3,
+      feedback: "O modelo lê o que você escreve como contexto para responder no momento — não treina nem armazena aquilo (a política de cada fornecedor é outra conversa). E para dado sigiloso, a jogada é um modelo aberto rodando dentro da empresa: a fonte entra sem o dado sair da rede."
+    },
+    {
+      pergunta: "Cliente animado: 'todo mundo na minha empresa já usa IA, então já capturamos o valor'. A correção é:",
+      alternativas: [
+        "Usar não é capturar valor: a minoria colhe, e o divisor é a abordagem, não a adoção",
+        "Está certo: o uso disseminado é a prova definitiva de que o valor já foi capturado",
+        "Falta só comprar mais licenças, para que a empresa inteira tenha acesso à ferramenta",
+        "O que falta é trocar para o modelo de IA mais avançado que existe no mercado agora"
+      ],
+      correta: 0,
+      feedback: "Adoção não é valor. A grande maioria usa IA e só uma minoria captura retorno — e o divisor não é o modelo nem o número de licenças, é a abordagem: redesenho de processo, verificação e resultado medido. É a distância entre 'usar' e 'mexer no bottom line'."
+    },
+    {
+      pergunta: "Um fornecedor faz uma demo de IA que deixa a sala de queixo caído. A pergunta que separa demo de operação é:",
+      alternativas: [
+        "'Qual é o modelo de IA por trás, e ele é o mais avançado que existe no mercado?'",
+        "'Quantas empresas já compraram exatamente essa mesma solução de vocês até agora?'",
+        "'Como vocês medem que a IA acertou — e como eu enxergo isso na operação real?'",
+        "'Dá pra fazer uma demonstração ainda maior, com mais casos, pra eu ter certeza?'"
+      ],
+      correta: 2,
+      feedback: "A demo é feita pra impressionar; a operação precisa aguentar. A ponte é a verificação: como você sabe que a IA acertou ANTES de o cliente descobrir que ela errou? Pedir a medição (não outra demo, nem o nome do modelo) é o que separa teatro de operação."
+    },
+    {
+      pergunta: "Cliente quer construir a própria IA em casa para tudo, 'pra não depender de ninguém'. Isso é armadilha quando:",
+      alternativas: [
+        "Sempre: construir em casa é caro e lento, então comprar pronto ganha em todo caso",
+        "O preço do fornecedor está alto e construir em casa promete sair um pouco mais em conta",
+        "Nunca: quem constrói dentro de casa controla o dado e por isso já larga na frente",
+        "Aquilo não é o diferencial competitivo dele, ou falta prontidão de dados pra sustentar"
+      ],
+      correta: 3,
+      feedback: "Construir em casa só faz sentido quando aquilo é o diferencial competitivo E há prontidão de dados. Fora disso, é armadilha (custo, demora, não escala): 76% das empresas compram, e parceiro externo opera cerca de 2x mais que time interno. Constrói-se só o que só você pode fazer."
+    },
+    {
+      pergunta: "Cliente desabafa: 'compramos o Copilot pra três mil pessoas e quase ninguém usa'. A melhor recomendação é:",
+      alternativas: [
+        "Trocar por outra ferramenta de IA; essa aí provavelmente não é boa o bastante mesmo pra vocês",
+        "Redesenhar o trabalho e pôr a liderança no exemplo, em vez de distribuir mais acesso",
+        "Tornar o uso obrigatório e cobrar de cada um um número mínimo de acessos por semana",
+        "Esperar mais um ano: a adoção de IA sempre demora bastante para engrenar de verdade"
+      ],
+      correta: 1,
+      feedback: "Licença não é adoção. O problema não é a ferramenta nem a falta de acesso — é que ninguém mudou o trabalho e o topo não puxa. O que converte é o pacote: líder no exemplo, redesenho de processo, treino por função, incentivo e medir uso — não comprar outra IA nem obrigar."
+    },
+    {
+      pergunta: "Cliente conclui: 'como não existe lei de IA sancionada no Brasil, a gente pode usar como quiser'. A correção é:",
+      alternativas: [
+        "Está certo: sem uma lei específica de IA, não há risco jurídico algum no uso dela hoje",
+        "Está errado só porque a Europa poderia querer multar a empresa lá na frente um dia",
+        "A LGPD já regula o dado pessoal, e o maior risco de hoje já é o shadow AI da sua equipe",
+        "Está certo, contanto que a empresa não atue no setor financeiro nem no de saúde do país todo"
+      ],
+      correta: 2,
+      feedback: "'Não tem lei de IA' é desculpa furada: a LGPD já vale para dado pessoal, e o PL 2338 está na reta final. E o maior risco não é a lei que vem — é o shadow AI de hoje (funcionário colando dado no chat pessoal): 20% dos vazamentos passam por ele. Governança agora é prudência e vantagem."
+    },
+    {
+      pergunta: "Numa conversa técnica, alguém te pergunta: 'qual IA é a melhor?'. A resposta que demonstra autoridade é:",
+      alternativas: [
+        "'Não existe a melhor — estão colados; escolhe por tarefa, preço e onde o dado vai'",
+        "'É a marca mais conhecida, que por ser a mais famosa acaba sendo a melhor pra tudo'",
+        "'É a mais nova a ser lançada, já que cada versão supera todas as anteriores em tudo'",
+        "'É a mais cara do mercado: no fim, o preço acompanha de perto a qualidade do modelo'"
+      ],
+      correta: 0,
+      feedback: "Os modelos de topo estão colados; não há 'a melhor', existe a melhor PRA TAREFA. Escolhe-se por qual é o trabalho, quanto custa e onde o dado pode ir — não pela fama, pelo lançamento ou pelo preço. É a régua que separa quem entende de quem repete manchete."
+    },
+    {
+      pergunta: "Você vai usar IA para montar um relatório com dados e citações. Para não levar invenção pra frente do cliente, você:",
+      alternativas: [
+        "Publica o que a IA escreveu: se o texto ficou fluido e convincente, ele já está correto",
+        "Pergunta de memória e usa a resposta; afinal, a IA guarda tudo o que já leu na internet",
+        "Pede pra IA jurar que checou todos os fatos e confia na palavra dela, pra ganhar tempo",
+        "Cola a fonte e pede pra ela se basear NELA, e confere cada número e cada citação"
+      ],
+      correta: 3,
+      feedback: "A IA é confiável pra transformar o que você dá e traiçoeira pra inventar o que você não deu — citação e número são o campeão de invenção. Dê a fonte (grounding) e confira: de memória ela inventa, com o material na mão ela quase não erra. Texto fluido não é texto verdadeiro."
+    },
+    {
+      pergunta: "O cliente cruza os braços: 'IA é só hype, ninguém tira retorno disso de verdade'. A resposta que fecha com autoridade é:",
+      alternativas: [
+        "'É verdade: o melhor é esperar a tecnologia amadurecer mais uns anos antes de tentar'",
+        "'A maioria não colhe porque trata IA como piloto e ferramenta, não como processo medido'",
+        "'Que nada: quem compra a ferramenta certa já colhe o retorno de forma automática'",
+        "'Depende só de escolher o modelo de IA mais avançado; com o melhor, o retorno vem sozinho'"
+      ],
+      correta: 1,
+      feedback: "A maioria de fato não vê retorno — mas a falha é de abordagem, não de tecnologia (MIT/BCG). Quem colhe redesenha o processo, embute verificação e mede o resultado; quem só compra a ferramenta e espera, não. Reconhecer o problema real, com o número na mão, é o que dá autoridade — nem hype nem negação."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
