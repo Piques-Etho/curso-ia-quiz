@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz — IA para Sócios</title>
+<style>
+  :root{
+    --papel:#F7F8F6; --tinta:#16232A; --tinta-suave:#5B6B72;
+    --marca:#0F5E68; --marca-claro:#E3EEEF;
+    --certo:#1F7A4D; --certo-claro:#E6F2EB;
+    --erro:#B3422E; --erro-claro:#F7E9E5;
+    --borda:#D8DEDC; --raio:14px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--papel); color:var(--tinta);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    font-size:17px; line-height:1.5;
+    min-height:100vh; display:flex; justify-content:center;
+  }
+  .quadro{width:100%; max-width:520px; padding:24px 20px 48px}
+  .cabecalho{margin-bottom:8px}
+  .modulo{font-size:13px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--marca); font-weight:600}
+  h1{font-family:Georgia,"Times New Roman",serif; font-weight:600;
+    font-size:26px; line-height:1.25; margin-top:4px}
+
+  /* Assinatura: a régua de resultado se preenche ao vivo e vira a string compartilhável */
+  .regua{display:flex; gap:10px; margin:20px 0 28px}
+  .ponto{width:34px; height:34px; border-radius:50%; border:2px solid var(--borda);
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:var(--tinta-suave);
+    background:#fff; transition:all .25s ease}
+  .ponto.atual{border-color:var(--marca); color:var(--marca)}
+  .ponto.certo{background:var(--certo); border-color:var(--certo); color:#fff}
+  .ponto.erro{background:var(--erro); border-color:var(--erro); color:#fff}
+
+  .cartao{background:#fff; border:1px solid var(--borda); border-radius:var(--raio);
+    padding:22px 20px; box-shadow:0 1px 3px rgba(22,35,42,.06)}
+  .num-q{font-family:Georgia,serif; font-size:15px; color:var(--tinta-suave);
+    margin-bottom:6px}
+  .pergunta{font-weight:600; font-size:18px; margin-bottom:18px}
+  .alternativa{display:block; width:100%; text-align:left; margin-bottom:10px;
+    padding:14px 16px; border:1.5px solid var(--borda); border-radius:10px;
+    background:#fff; font:inherit; color:var(--tinta); cursor:pointer;
+    transition:border-color .15s, background .15s}
+  .alternativa:not(:disabled):hover{border-color:var(--marca); background:var(--marca-claro)}
+  .alternativa:disabled{cursor:default; opacity:.55}
+  .alternativa.marcada-certa{opacity:1; border-color:var(--certo);
+    background:var(--certo-claro); font-weight:600}
+  .alternativa.marcada-errada{opacity:1; border-color:var(--erro);
+    background:var(--erro-claro)}
+
+  .feedback{margin-top:16px; padding:16px; border-radius:10px; font-size:15.5px;
+    display:none}
+  .feedback.certo{display:block; background:var(--certo-claro);
+    border-left:4px solid var(--certo)}
+  .feedback.erro{display:block; background:var(--erro-claro);
+    border-left:4px solid var(--erro)}
+  .feedback strong{display:block; margin-bottom:4px}
+
+  .botao{display:block; width:100%; margin-top:18px; padding:15px;
+    border:none; border-radius:10px; background:var(--marca); color:#fff;
+    font:inherit; font-weight:600; font-size:16px; cursor:pointer}
+  .botao:active{transform:translateY(1px)}
+  .botao.fantasma{background:#fff; color:var(--marca);
+    border:1.5px solid var(--marca)}
+  .oculto{display:none}
+
+  /* Tela final */
+  .placar-final{text-align:center; padding:8px 0 4px}
+  .nota{font-family:Georgia,serif; font-size:52px; font-weight:600;
+    color:var(--marca)}
+  .glifos{font-size:30px; letter-spacing:6px; margin:10px 0 4px}
+  .mensagem-final{color:var(--tinta-suave); font-size:15.5px; margin-bottom:18px}
+  .campo-nome{width:100%; padding:13px 15px; border:1.5px solid var(--borda);
+    border-radius:10px; font:inherit; margin-bottom:12px}
+  .campo-nome:focus{outline:2px solid var(--marca); border-color:var(--marca)}
+  .aviso-copia{text-align:center; font-size:14px; color:var(--certo);
+    margin-top:10px; visibility:hidden}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<div id="gate-quiz" style="position:fixed;inset:0;background:#F7F8F6;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+  <div style="width:100%;max-width:360px;text-align:center">
+    <div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#0F5E68;font-weight:600">IA para Executivos</div>
+    <h2 style="font-family:Georgia,serif;font-size:24px;margin:6px 0 16px;color:#16232A">Conteúdo protegido</h2>
+    <input id="gq-senha" type="password" placeholder="Senha do grupo" style="width:100%;padding:13px 15px;border:1.5px solid #D8DEDC;border-radius:10px;font-size:16px;text-align:center;margin-bottom:10px">
+    <button id="gq-btn" style="width:100%;padding:14px;border:none;border-radius:10px;background:#0F5E68;color:#fff;font-size:16px;font-weight:600;cursor:pointer">Entrar</button>
+    <div id="gq-erro" style="color:#B3422E;font-size:14px;margin-top:10px;min-height:18px"></div>
+  </div>
+</div>
+<script>
+(function(){var ITER=200000;
+async function dk(pw,salt){var bk=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);return crypto.subtle.deriveKey({name:"PBKDF2",salt:salt,iterations:ITER,hash:"SHA-256"},bk,{name:"AES-GCM",length:256},false,["decrypt"]);}
+async function chk(pw){var buf=new Uint8Array(await (await fetch("audio/verifier.enc")).arrayBuffer());var salt=buf.slice(0,16),iv=buf.slice(16,28),ct=buf.slice(28);var k=await dk(pw,salt);var pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:iv},k,ct);return new TextDecoder().decode(pt)==="etho-ok";}
+var btn=document.getElementById("gq-btn"),inp=document.getElementById("gq-senha"),err=document.getElementById("gq-erro");
+async function go(){err.textContent="";btn.disabled=true;btn.textContent="Verificando...";try{if(await chk(inp.value)){document.getElementById("gate-quiz").style.display="none";}else{throw 0;}}catch(e){err.textContent="Senha incorreta.";btn.disabled=false;btn.textContent="Entrar";}}
+btn.onclick=go;inp.addEventListener("keydown",function(e){if(e.key==="Enter")go();});})();
+</script>
+
+<div class="quadro">
+  <div class="cabecalho">
+    <div class="modulo" id="rotulo-modulo"></div>
+    <h1 id="titulo-quiz"></h1>
+  </div>
+  <div class="regua" id="regua" aria-label="Progresso do quiz"></div>
+
+  <div class="cartao" id="cartao-questao">
+    <div class="num-q" id="num-q"></div>
+    <div class="pergunta" id="texto-pergunta"></div>
+    <div id="alternativas"></div>
+    <div class="feedback" id="feedback" role="status"></div>
+    <button class="botao oculto" id="btn-proxima" onclick="proxima()">Próxima questão</button>
+  </div>
+
+  <div class="cartao oculto" id="cartao-final">
+    <div class="placar-final">
+      <div class="nota" id="nota-final"></div>
+      <div class="glifos" id="glifos-final"></div>
+      <div class="mensagem-final" id="mensagem-final"></div>
+    </div>
+    <input class="campo-nome" id="campo-nome" type="text"
+      placeholder="Seu nome (aparece no resultado)" autocomplete="name">
+    <button class="botao" onclick="compartilharWhatsApp()">Enviar resultado no WhatsApp</button>
+    <button class="botao fantasma" onclick="copiarResultado()">Copiar resultado</button>
+    <div class="aviso-copia" id="aviso-copia">Copiado — cole no grupo.</div>
+  </div>
+</div>
+
+<script>
+/* ===== QUIZ_DATA_INICIO =====
+   A skill /produzir-modulo substitui APENAS o objeto QUIZ abaixo.
+   Estrutura: modulo, titulo, questoes[{pergunta, alternativas[4],
+   correta(indice 0-3), feedback}]. Nada mais neste arquivo muda. */
+const QUIZ = {
+  modulo: "Módulo 7",
+  titulo: "Risco, governança e regulação",
+  questoes: [
+    {
+      pergunta: "Segundo o módulo, qual é o maior risco de IA numa empresa HOJE?",
+      alternativas: [
+        "O 'shadow AI' — gente usando IA por fora, sem controle, com dado vazando agora",
+        "A regulação que vem por aí, que deve proibir a maior parte dos usos de IA nas empresas",
+        "O custo de comprar as ferramentas de IA mais avançadas do mercado hoje",
+        "A concorrência que adota IA mais rápido e acaba roubando os seus clientes"
+      ],
+      correta: 0,
+      feedback: "O maior risco não é a lei que vem — é o que já acontece: o shadow AI, funcionário usando IA por fora, sem a empresa saber. A IBM achou que em 20% dos vazamentos o shadow AI estava no meio, somando ~US$ 670 mil ao custo. O risco não espera a regulação."
+    },
+    {
+      pergunta: "Toda regulação séria de IA (como o AI Act europeu) se organiza principalmente por:",
+      alternativas: [
+        "Tamanho da empresa: só as grandes precisam de fato cumprir as regras de IA",
+        "Tipo de tecnologia: cada modelo de IA acaba tendo uma lei diferente da outra",
+        "Risco proporcional: pega pesado onde o dano é grande e alivia onde é bobagem",
+        "Ordem de chegada: quem adotou IA primeiro é quem pega as regras mais duras"
+      ],
+      correta: 2,
+      feedback: "O esqueleto é o risco proporcional: três caixas — uso proibido (inaceitável), alto risco (decide coisa séria da vida: crédito, RH, saúde — pode, com regra dura) e o resto (leve). A primeira pergunta da empresa é 'em qual caixa eu estou'."
+    },
+    {
+      pergunta: "Se uma decisão de IA da sua empresa prejudica um cliente, pela lógica da regulação, quem responde?",
+      alternativas: [
+        "O fornecedor do modelo de IA, afinal foi quem construiu a tecnologia",
+        "Ninguém em definitivo: se foi a IA que decidiu, não há um responsável claro",
+        "O funcionário que apertou o botão e operou a ferramenta naquele momento",
+        "A empresa que usa a IA e lucra com ela — 'foi o algoritmo' não é defesa"
+      ],
+      correta: 3,
+      feedback: "Responsabilização é um pilar de toda lei de IA: quem usa e lucra com a IA responde pelo que ela faz. 'Foi o algoritmo' não isenta ninguém — a empresa é a responsável, mesmo que o modelo seja de um fornecedor."
+    },
+    {
+      pergunta: "Além de classificar por risco, que direito toda lei de IA tende a garantir a quem é afetado por uma decisão automática?",
+      alternativas: [
+        "Receber um desconto sempre que uma IA for usada no atendimento ao cliente",
+        "Saber que está diante de uma IA e poder contestar a decisão automática",
+        "Exigir que a empresa pare de usar qualquer IA assim que o cliente pedir",
+        "Ter acesso ao código-fonte do modelo de IA que a empresa usa por dentro"
+      ],
+      correta: 1,
+      feedback: "Dois pilares que se repetem: transparência (saber que é uma IA, não uma pessoa) e explicação/contestação (se a IA negou seu crédito, você tem direito de saber por quê e de recorrer). Não é acesso ao código nem poder de veto sobre toda IA."
+    },
+    {
+      pergunta: "Ainda não há lei específica de IA sancionada no Brasil. Isso significa que usar IA está sem regra nenhuma por aqui?",
+      alternativas: [
+        "Sim: enquanto o Marco Legal da IA não passar, nada regula o uso de IA no país",
+        "Sim, com exceção dos bancos, que já seguem regras próprias do Banco Central",
+        "Não, mas só as empresas que exportam para a Europa têm alguma obrigação real",
+        "Não: a LGPD já vale desde 2020 e alcança todo dado pessoal que entra numa IA"
+      ],
+      correta: 3,
+      feedback: "'Não tem lei de IA ainda' é desculpa furada. A LGPD, em vigor desde 2020, já governa todo dado pessoal que entra numa IA — cliente, funcionário, CPF. Falta a lei específica de IA (o PL 2338), mas o dado pessoal já tem dono."
+    },
+    {
+      pergunta: "Você descobre que a equipe cola documentos confidenciais no ChatGPT pessoal para agilizar. A leitura correta é:",
+      alternativas: [
+        "Sem problema: é só produtividade, e a IA nem guarda mesmo o que recebe",
+        "Basta proibir o ChatGPT: com ele bloqueado, o risco simplesmente some",
+        "É shadow AI — dado sensível indo para um canal fora do controle da empresa",
+        "O risco fica por conta do funcionário, que assumiu colar o documento por ali"
+      ],
+      correta: 2,
+      feedback: "É o caso clássico de shadow AI: dado da empresa saindo para um canal que ela não controla. A resposta não é fingir que não há risco nem só bloquear uma ferramenta (usam outra) — é ter política e um caminho seguro de uso. E a empresa responde, não só o funcionário."
+    },
+    {
+      pergunta: "Um diretor conclui: 'como não existe lei de IA no Brasil ainda, a gente pode usar IA como quiser'. A correção é:",
+      alternativas: [
+        "A LGPD já regula o dado pessoal, e o PL 2338 vem aí — melhor se organizar agora",
+        "Está certo, desde que a empresa não atue no setor financeiro do país",
+        "Está certo: sem lei específica de IA, não há risco jurídico algum no uso corporativo",
+        "Errado, mas só porque a Europa poderia querer multar a empresa um dia"
+      ],
+      correta: 0,
+      feedback: "Dois furos: a LGPD já vale (dado pessoal) e o PL 2338 está na reta final. Não é 'liberado' — é que a lei específica está chegando, e quem organiza governança agora (por causa do vazamento de hoje) sai na frente de quem espera a sanção."
+    },
+    {
+      pergunta: "Sobre o Marco Legal da IA (PL 2338), qual afirmação está correta?",
+      alternativas: [
+        "Já foi sancionado e está em vigor, com multas sendo aplicadas às empresas",
+        "Foi aprovado no Senado e está na Câmara para votação final; ainda não é lei",
+        "Nem começou a tramitar; por enquanto é só uma ideia solta no governo federal",
+        "Foi rejeitado, e o Brasil decidiu não ter uma lei específica de IA por ora"
+      ],
+      correta: 1,
+      feedback: "O PL 2338 foi aprovado no Senado no fim de 2024 e está na Câmara para a votação final, prevista para 2026 — ainda não sancionado. Não é mais 'se', é 'quando': modelo por risco, direitos do afetado, órgão fiscalizador e multa de até R$ 50 milhões."
+    },
+    {
+      pergunta: "Sua empresa quer usar IA para filtrar currículos e decidir quem passa para a entrevista. Na lógica de risco, esse uso é:",
+      alternativas: [
+        "Baixo risco: é uma triagem administrativa, sem grande consequência para ninguém",
+        "Proibido: nenhuma lei permite usar IA na área de recursos humanos das empresas",
+        "Sem classificação: recrutamento não entra em nenhuma regra específica de IA",
+        "Alto risco: decide algo sério da vida das pessoas, então exige controle humano"
+      ],
+      correta: 3,
+      feedback: "Decidir quem é contratado mexe com a vida das pessoas — é o exemplo típico de alto risco (junto com crédito e saúde). Não é proibido, mas exige regra dura: controle, registro e um humano no circuito. Não é triagem 'sem consequência'."
+    },
+    {
+      pergunta: "Diante do shadow AI, qual é a atitude que o módulo recomenda a quem decide?",
+      alternativas: [
+        "Esperar a lei passar para só então criar as regras de uso de IA na empresa",
+        "Bloquear toda a IA da empresa até que exista uma lei bem clara sobre o tema",
+        "Criar política de governança e um caminho seguro de uso desde já",
+        "Confiar que cada um vai usar com bom senso, deixando a política de lado"
+      ],
+      correta: 2,
+      feedback: "Não dá para esperar a lei (o vazamento já acontece) nem bloquear tudo (usam por fora, e aí você perde a visão). O caminho é governança agora: política clara do que pode, uma alternativa segura de uso, e alguém medindo. A regra que vem só vai cobrar o que a prudência já pede."
+    }
+  ]
+};
+/* ===== QUIZ_DATA_FIM ===== */
+
+let atual = 0;
+const resultados = [];
+
+function iniciar(){
+  document.getElementById("rotulo-modulo").textContent = QUIZ.modulo;
+  document.getElementById("titulo-quiz").textContent = QUIZ.titulo;
+  const regua = document.getElementById("regua");
+  QUIZ.questoes.forEach((_, i) => {
+    const p = document.createElement("div");
+    p.className = "ponto"; p.id = "ponto-" + i; p.textContent = i + 1;
+    regua.appendChild(p);
+  });
+  mostrarQuestao();
+}
+
+function mostrarQuestao(){
+  const q = QUIZ.questoes[atual];
+  document.getElementById("num-q").textContent =
+    "Questão " + (atual + 1) + " de " + QUIZ.questoes.length;
+  document.getElementById("texto-pergunta").textContent = q.pergunta;
+  document.getElementById("ponto-" + atual).classList.add("atual");
+  const cx = document.getElementById("alternativas");
+  cx.innerHTML = "";
+  q.alternativas.forEach((alt, i) => {
+    const b = document.createElement("button");
+    b.className = "alternativa"; b.textContent = alt;
+    b.onclick = () => responder(i, b);
+    cx.appendChild(b);
+  });
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback"; fb.innerHTML = "";
+  document.getElementById("btn-proxima").classList.add("oculto");
+}
+
+function responder(escolha, botao){
+  const q = QUIZ.questoes[atual];
+  const acertou = escolha === q.correta;
+  resultados.push(acertou);
+  document.querySelectorAll(".alternativa").forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.correta) b.classList.add("marcada-certa");
+    else if (i === escolha && !acertou) b.classList.add("marcada-errada");
+  });
+  const ponto = document.getElementById("ponto-" + atual);
+  ponto.classList.remove("atual");
+  ponto.classList.add(acertou ? "certo" : "erro");
+  ponto.textContent = acertou ? "✓" : "✗";
+  const fb = document.getElementById("feedback");
+  fb.className = "feedback " + (acertou ? "certo" : "erro");
+  fb.innerHTML = "<strong>" + (acertou ? "Certo." : "Não é essa.") +
+    "</strong>" + q.feedback;
+  const btn = document.getElementById("btn-proxima");
+  btn.textContent = atual < QUIZ.questoes.length - 1
+    ? "Próxima questão" : "Ver resultado";
+  btn.classList.remove("oculto");
+  btn.focus();
+}
+
+function proxima(){
+  atual++;
+  if (atual < QUIZ.questoes.length) { mostrarQuestao(); return; }
+  document.getElementById("cartao-questao").classList.add("oculto");
+  const acertos = resultados.filter(Boolean).length;
+  document.getElementById("nota-final").textContent =
+    acertos + "/" + QUIZ.questoes.length;
+  document.getElementById("glifos-final").textContent = glifos();
+  document.getElementById("mensagem-final").textContent =
+    acertos === QUIZ.questoes.length
+      ? "Gabaritou. Poste no grupo e pressione os outros."
+      : "O feedback das erradas volta na reunião. Poste seu resultado no grupo.";
+  document.getElementById("cartao-final").classList.remove("oculto");
+}
+
+function glifos(){
+  return resultados.map(r => r ? "✅" : "❌").join(" ");
+}
+
+function textoResultado(){
+  const nome = document.getElementById("campo-nome").value.trim();
+  const acertos = resultados.filter(Boolean).length;
+  return "📊 Quiz " + QUIZ.modulo.replace(" · EXEMPLO","") +
+    (nome ? " — " + nome : "") + ": " + acertos + "/" +
+    QUIZ.questoes.length + "\n" + glifos();
+}
+
+function compartilharWhatsApp(){
+  window.open("https://wa.me/?text=" +
+    encodeURIComponent(textoResultado()), "_blank");
+}
+
+function copiarResultado(){
+  navigator.clipboard.writeText(textoResultado()).then(() => {
+    document.getElementById("aviso-copia").style.visibility = "visible";
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
