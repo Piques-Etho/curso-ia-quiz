@@ -192,6 +192,19 @@ const BLOCOS = [
        desc:"Um quiz de cenários que cruza os oito módulos — o fechamento da trilha.",
        soQuiz:true, quiz:"quiz-m09.html"},
     ]
+  },
+  {
+    num: "Movimento 4",
+    titulo: "Prática e consulta (sempre à mão)",
+    desc: "Materiais vivos pra usar no dia a dia depois da trilha: a safra de ferramentas do mês e como escrever bons prompts.",
+    modulos: [
+      {n:10, titulo:"Ferramentas de IA: o que usar e para quê",
+       desc:"Um guia vivo, atualizado todo mês: onde cada ferramenta se encaixa — conversa, imagem, voz, vídeo, reunião — e um jeito de experimentar cada uma. Não é pra decorar; é pra consultar.",
+       pagina:"ferramentas.html", acaoLabel:"Abrir o guia de ferramentas"},
+      {n:11, titulo:"Prompt engineering para executivos",
+       desc:"Como conversar COM a IA e tirar ouro: a anatomia de um bom prompt — dos quatro hábitos que já mudam tudo às técnicas avançadas — com exemplos prontos pra copiar.",
+       pagina:"prompt-engineering.html", acaoLabel:"Abrir o guia de prompts"},
+    ]
   }
 ];
 
@@ -254,7 +267,9 @@ function linhaModulo(m){
   const div = document.createElement("div");
   div.className = "mod" + (m.breve ? " embreve" : "");
   let acoes = "";
-  if (m.breve){
+  if (m.pagina){
+    acoes = '<div class="acoes"><a class="acao cheia" href="'+m.pagina+'">'+(m.acaoLabel||"Abrir")+' →</a></div>';
+  } else if (m.breve){
     acoes = '<div class="acoes"><span class="tag-embreve">Em breve</span></div>';
   } else if (m.soQuiz){
     acoes = '<div class="acoes"><a class="acao cheia" href="'+m.quiz+'">✎ Fazer o quiz de cenários</a></div>';
